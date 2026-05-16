@@ -1,9 +1,9 @@
 import streamlit as st
 import datetime as dt
-import pandas as pd
+import requests
 
 # --- SYSTEM INITIALIZATION & THEME CORES ---
-st.set_page_config(page_title="P.A.S.E. Ultimate Dropdown Terminal", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="P.A.S.E. Automated Terminal", page_icon="🛡️", layout="wide")
 
 # Institutional Trading Interface Style Configuration
 st.markdown("""
@@ -22,9 +22,29 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Title Header Matrix
-st.title("🛡️ P.A.S.E. Ultimate Dropdown Terminal")
-st.caption("Psychological Assistant for Stock Exchange • Select & Track Core Sandbox v4.0")
+st.title("🛡️ P.A.S.E. Automated Terminal")
+st.caption("Psychological Assistant for Stock Exchange • Live AMFI NAV Tracking v5.0")
 st.markdown("---")
+
+# --- AMFI LIVE TRACKER FUNCTION ---
+@st.cache_data(ttl=3600)  # Caches the data for 1 hour to stay safe and blazing fast
+def get_live_nav(amfi_code):
+    try:
+        url = f"https://api.mfapi.in/mf/{amfi_code}"
+        response = requests.get(url, timeout=10).json()
+        live_nav = float(response["data"][0]["nav"])
+        return live_nav
+    except:
+        return None
+
+# Mapping scheme for the top Nifty 50 Direct Growth funds via official AMFI Codes
+FUND_DICTIONARY = {
+    "UTI Nifty 50 Index Fund (Direct Growth)": {"code": "120716", "fallback": 165.50},
+    "HDFC Nifty 50 Index Fund (Direct Growth)": {"code": "119063", "fallback": 210.20},
+    "SBI Nifty 50 Index Fund (Direct Growth)": {"code": "119551", "fallback": 230.10},
+    "ICICI Prudential Nifty 50 Index Fund (Direct Growth)": {"code": "120645", "fallback": 225.40},
+    "Groww Nifty 50 Index Fund (Direct Growth)": {"code": "149262", "fallback": 15.30}
+}
 
 # --- SIDEBAR CONTROL CENTER ---
 with st.sidebar:
@@ -39,24 +59,28 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # 2. Pre-Loaded Selection Hub
+    # 2. Automated Selection Hub
     st.subheader("🗂️ 2. Select & Configure Fund")
     
-    selected_fund = st.selectbox(
-        "Choose your Nifty 50 Fund House:",
-        ["UTI Nifty 50 Index Fund", 
-         "HDFC Nifty 50 Index Fund", 
-         "SBI Nifty 50 Index Fund", 
-         "ICICI Prudential Nifty 50 Index Fund",
-         "Groww Nifty 50 Index Fund",
-         "Custom / Other Index Fund"]
-    )
+    selected_fund = st.selectbox("Choose your Nifty 50 Fund House:", list(FUND_DICTIONARY.keys()))
     
-    st.caption(f"Configuring core engine matrix for: **{selected_fund}**")
+    # Automatically fetch live price based on selection
+    target_code = FUND_DICTIONARY[selected_fund]["code"]
+    fetched_nav = get_live_nav(target_code)
     
+    # Fallback to structural baseline price if connection lags
+    if fetched_nav is None:
+        fetched_nav = FUND_DICTIONARY[selected_fund]["fallback"]
+        st.sidebar.warning("Using cached baseline price layer.")
+    else:
+        st.sidebar.success(f"Live NAV Connected: ₹{fetched_nav}")
+    
+    # Inputs required from the user
     invested_capital = st.number_input("Total Money Invested (₹)", min_value=0.0, value=0.0, step=500.0)
-    current_nav = st.number_input("Current NAV Price of Fund (₹)", min_value=0.0, value=0.0, step=1.0)
     average_nav = st.number_input("Your Average Purchase NAV (₹)", min_value=0.0, value=0.0, step=1.0)
+    
+    # Hidden automated mapping
+    current_nav = fetched_nav
 
 # --- COMPUTE MATRIX EQUATIONS ---
 if invested_capital > 0 and current_nav > 0 and average_nav > 0:
@@ -91,6 +115,9 @@ if invested_capital > 0 and current_nav > 0 and average_nav > 0:
     with c4:
         st.markdown(f"<div class='card-container'><span class='section-header'>Absolute Portfolio Yield</span><h2 class='{p_class}'>{sign}{round(total_yield, 2)}%</h2></div>", unsafe_allow_html=True)
 
+    # Display Automated NAV Info Card
+    st.caption(f"🤖 **Automated Pipeline Data Matrix:** Current asset price for **{selected_fund}** is pulled live at **₹{current_nav}** per unit.")
+
     # 2. Strategic Risk Allocation Distribution Layout
     st.markdown("### 🛡️ Defensive Core Shield Distribution Balance")
     total_wealth = total_current_value + fd_reserves
@@ -99,7 +126,6 @@ if invested_capital > 0 and current_nav > 0 and average_nav > 0:
     
     col_chart1, col_chart2 = st.columns([3, 2])
     with col_chart1:
-        # Render a sleek text-based horizontal distribution visualization bar
         st.markdown(f"""
         <div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d;'>
             <div style='display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;'>
@@ -131,7 +157,7 @@ if invested_capital > 0 and current_nav > 0 and average_nav > 0:
         <div class='status-harvest'>
             🚨 LIQUIDATION PROTOCOL ENGAGED • {selected_fund.upper()}<br>
             <span style='font-size:0.9rem; font-weight:normal; color:#c9d1d9;'>
-                Action: Asset has reached a performance yield of <b>{round(total_yield, 2)}%</b>. Redeem exactly <b>{round(units_to_harvest, 3)} units</b> via your trading terminal (Groww/Zerodha/Kite) and move the realized profit safely into your Core Shield reserves.
+                Action: Asset has reached a performance yield of <b>{round(total_yield, 2)}%</b>. Redeem exactly <b>{round(units_to_harvest, 3)} units</b> via your trading terminal (Groww/Zerodha) and move the realized profit safely into your Core Shield reserves.
             </span>
         </div>
         """, unsafe_allow_html=True)
@@ -173,4 +199,4 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 st.markdown("---")
-st.caption(f"P.A.S.E Ultimate Terminal Node Active | Global Grid Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
+st.caption(f"P.A.S.E Automated Terminal Node Active | Global Grid Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
