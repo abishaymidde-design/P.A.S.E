@@ -3,7 +3,7 @@ import datetime as dt
 import requests
 
 # --- SYSTEM INITIALIZATION & THEME CORES ---
-st.set_page_config(page_title="P.A.S.E. Multi-Fund Workspace", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="P.A.S.E. Universal Multi-Fund Terminal", page_icon="🛡️", layout="wide")
 
 # Institutional Cyberpunk Dark Interface Configuration
 st.markdown("""
@@ -23,13 +23,15 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Title Header Matrix
-st.title("🛡️ P.A.S.E. Multi-Fund Workspace")
-st.caption("Psychological Assistant for Stock Exchange • Automated Capital Matrix v8.0")
+st.title("🛡️ P.A.S.E. Universal Workspace")
+st.caption("Psychological Assistant for Stock Exchange • Automated Capital Matrix v9.0")
 st.markdown("---")
 
 # --- AMFI LIVE TRACKER CENTRAL INTERNET REGISTRY ---
-@st.cache_data(ttl=1800) # Caches internet prices for 30 mins to run lightning fast
+@st.cache_data(ttl=1800)
 def get_live_nav(amfi_code):
+    if not amfi_code:
+        return None
     try:
         url = f"https://api.mfapi.in/mf/{amfi_code}"
         response = requests.get(url, timeout=5).json()
@@ -37,7 +39,7 @@ def get_live_nav(amfi_code):
     except:
         return None
 
-# Hardcoded Official Tracking DB
+# Hardcoded Official Tracking DB (With Custom Override Added)
 FUND_DATABASE = {
     "UTI Nifty 50 Index Fund": {"code": "120716", "fallback": 165.50},
     "HDFC Nifty 50 Index Fund": {"code": "119063", "fallback": 210.20},
@@ -45,14 +47,15 @@ FUND_DATABASE = {
     "ICICI Pru Nifty 50 Index Fund": {"code": "120645", "fallback": 225.40},
     "Groww Nifty 50 Index Fund": {"code": "149262", "fallback": 15.30},
     "Parag Parikh Flexi Cap Fund": {"code": "122639", "fallback": 85.40},
-    "Quant Small Cap Fund": {"code": "120847", "fallback": 240.60}
+    "Quant Small Cap Fund": {"code": "120847", "fallback": 240.60},
+    "⚠️ Custom / Other Fund (Manual Input)": {"code": None, "fallback": 0.0}
 }
 
 # --- SIDEBAR CONTROL CONTROL PANEL ---
 with st.sidebar:
     st.header("⚙️ SYSTEM CONTROL CENTER")
     
-    # 1. Financial Income Planner
+    # 1. Budget Planner
     st.subheader("💰 1. Allocation Planner")
     income = st.number_input("Monthly Income (₹)", min_value=0, value=50000, step=5000)
     sip_pct = st.slider("Target Allocation Pace (%)", min_value=5, max_value=50, value=15, step=5)
@@ -60,7 +63,7 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # 2. Smart-Text Clipboard Module (Saves or restores entire multi-fund states)
+    # 2. Smart-Text Clipboard Module
     st.subheader("💾 2. Smart-Text Setup Sync")
     st.caption("Paste a backup string to load a profile, or copy the generated code below to save it.")
     restore_string = st.text_input("Paste Smart-Text Code here:")
@@ -77,18 +80,28 @@ with st.sidebar:
 parsed_backup_data = {}
 if restore_string:
     try:
-        # Expected Format: UTI:10000:150:12|QUANT:5000:210:15
         blocks = restore_string.split("|")
         for b in blocks:
             parts = b.split(":")
-            # Find short matching key from DB
+            found_match = False
             for full_name in FUND_DATABASE.keys():
                 if parts[0].strip().lower() in full_name.lower():
                     parsed_backup_data[full_name] = {
                         "capital": float(parts[1]),
                         "avg_nav": float(parts[2]),
-                        "target": float(parts[3])
+                        "target": float(parts[3]),
+                        "custom_name": parts[4] if len(parts) > 4 else "",
+                        "custom_nav": float(parts[5]) if len(parts) > 5 else 0.0
                     }
+                    found_match = True
+            if not found_match: # Fallback to custom holder row
+                parsed_backup_data["⚠️ Custom / Other Fund (Manual Input)"] = {
+                    "capital": float(parts[1]),
+                    "avg_nav": float(parts[2]),
+                    "target": float(parts[3]),
+                    "custom_name": parts[0],
+                    "custom_nav": float(parts[4]) if len(parts) > 4 else 0.0
+                }
     except:
         st.sidebar.error("Invalid Smart-Text configuration string format.")
 
@@ -101,47 +114,73 @@ if tracked_assets:
     recommended_sip = (income * sip_pct) / 100
     st.info(f"💡 **Target Strategy Vector:** Budget allocations tracking a total pace of **₹{round(recommended_sip, 2)} / month** across your active asset containers.")
     
-    # Run through selected assets as independent stacked cards
     for fund in tracked_assets:
         # Load preset configuration parameters from user input or backup string
         default_capital = 0.0
         default_avg = 0.0
         default_tgt = 12.0
+        default_custom_name = "My Custom Asset"
+        default_custom_nav = 0.0
         
         if fund in parsed_backup_data:
             default_capital = parsed_backup_data[fund]["capital"]
             default_avg = parsed_backup_data[fund]["avg_nav"]
             default_tgt = parsed_backup_data[fund]["target"]
+            if "custom_name" in parsed_backup_data[fund]:
+                default_custom_name = parsed_backup_data[fund]["custom_name"]
+            if "custom_nav" in parsed_backup_data[fund]:
+                default_custom_nav = parsed_backup_data[fund]["custom_nav"]
             
+        # Isolate if this asset card is a custom entry or live API tracked
+        is_custom = FUND_DATABASE[fund]["code"] is None
+        
         st.markdown(f"""
         <div class="fund-card">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; padding-bottom: 8px; margin-bottom: 15px;">
-                <span style="font-weight: bold; color: #58a6ff; font-size: 1.1rem;">📈 {fund}</span>
-                <span class="badge-quality">🏆 tracking quality: high (AMFI Active)</span>
+                <span style="font-weight: bold; color: {'#ff9100' if is_custom else '#58a6ff'}; font-size: 1.1rem;">📈 {fund}</span>
+                <span class="badge-quality">{'⚙️ Manual Price Override' if is_custom else '🏆 tracking quality: high (AMFI Active)'}</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
         
         # Deploy individual user parameter input fields inside layout blocks
-        col_in1, col_in2, col_in3 = st.columns(3)
-        with col_in1:
-            inv_cap = st.number_input(f"Money Invested (₹)", min_value=0.0, value=default_capital, step=500.0, key=f"cap_{fund}")
-        with col_in2:
-            buy_nav = st.number_input(f"Your Average Purchase NAV (₹)", min_value=0.0, value=default_avg, step=1.0, key=f"nav_{fund}")
-        with col_in3:
-            tgt_yield = st.slider(f"Target Profit Exit (%)", min_value=5.0, max_value=30.0, value=default_tgt, step=0.5, key=f"tgt_{fund}")
-            
-        # Append configurations vector to master setup string registry
-        short_name = fund.split(" ")[0] # Extracts key token name (e.g. UTI or HDFC)
-        backup_string_list.append(f"{short_name}:{inv_cap}:{buy_nav}:{tgt_yield}")
-
-        # Compute performance layers if values exist
-        if inv_cap > 0 and buy_nav > 0:
+        if is_custom:
+            col_cust1, col_cust2 = st.columns([1, 2])
+            with col_cust1:
+                display_name = st.text_input("Asset Label / Stock Code", value=default_custom_name, key=f"name_{fund}")
+            with col_cust2:
+                manual_live_nav = st.number_input("Current Live Price / Live NAV (₹)", min_value=0.0, value=default_custom_nav, step=1.0, key=f"curr_nav_{fund}")
+                
+            col_in1, col_in2, col_in3 = st.columns(3)
+            with col_in1:
+                inv_cap = st.number_input(f"Money Invested (₹)", min_value=0.0, value=default_capital, step=500.0, key=f"cap_{fund}")
+            with col_in2:
+                buy_nav = st.number_input(f"Your Average Purchase Price (₹)", min_value=0.0, value=default_avg, step=1.0, key=f"nav_{fund}")
+            with col_in3:
+                tgt_yield = st.slider(f"Target Profit Exit (%)", min_value=5.0, max_value=30.0, value=default_tgt, step=0.5, key=f"tgt_{fund}")
+                
+            live_nav_price = manual_live_nav
+            backup_string_list.append(f"{display_name}:{inv_cap}:{buy_nav}:{tgt_yield}:{live_nav_price}")
+        else:
+            display_name = fund
+            col_in1, col_in2, col_in3 = st.columns(3)
+            with col_in1:
+                inv_cap = st.number_input(f"Money Invested (₹)", min_value=0.0, value=default_capital, step=500.0, key=f"cap_{fund}")
+            with col_in2:
+                buy_nav = st.number_input(f"Your Average Purchase NAV (₹)", min_value=0.0, value=default_avg, step=1.0, key=f"nav_{fund}")
+            with col_in3:
+                tgt_yield = st.slider(f"Target Profit Exit (%)", min_value=5.0, max_value=30.0, value=default_tgt, step=0.5, key=f"tgt_{fund}")
+                
             amfi_id = FUND_DATABASE[fund]["code"]
             live_nav_price = get_live_nav(amfi_id)
             if live_nav_price is None:
                 live_nav_price = FUND_DATABASE[fund]["fallback"]
                 
+            short_name = fund.split(" ")[0]
+            backup_string_list.append(f"{short_name}:{inv_cap}:{buy_nav}:{tgt_yield}")
+
+        # Compute performance layers if values exist
+        if inv_cap > 0 and buy_nav > 0 and live_nav_price > 0:
             total_units_owned = inv_cap / buy_nav
             current_market_val = total_units_owned * live_nav_price
             net_profit_loss = current_market_val - inv_cap
@@ -153,7 +192,7 @@ if tracked_assets:
             # Sub-Card Data Metrics Render Grid Layout
             c_m1, c_m2, c_m3 = st.columns(3)
             with c_m1:
-                st.markdown(f"<span class='metric-title'>Current Value</span><div class='metric-value' style='color:#00e5ff;'>₹{round(current_market_val,2)}</div><caption style='font-size:0.75rem; color:#8b949e;'>Live NAV: ₹{live_nav_price}</caption>", unsafe_allow_html=True)
+                st.markdown(f"<span class='metric-title'>Current Value</span><div class='metric-value' style='color:#00e5ff;'>₹{round(current_market_val,2)}</div><caption style='font-size:0.75rem; color:#8b949e;'>Live Asset Price: ₹{live_nav_price}</caption>", unsafe_allow_html=True)
             with c_m2:
                 sign_str = "+" if net_profit_loss >= 0 else ""
                 color_str = "#39d353" if net_profit_loss >= 0 else "#f85149"
@@ -163,23 +202,18 @@ if tracked_assets:
                 st.markdown(f"<span class='metric-title'>Absolute Yield</span><div class='metric-value' style='color:{color_str};'>{sign_str}{round(current_yield_pct,2)}%</div>", unsafe_allow_html=True)
 
             # --- SYSTEM INTELLIGENT LOGIC GATE DEPLOYMENT LOOP ---
-            
-            # Module A: AUTOMATED "MARKET CRASH" ACCUMULATION CALCULATOR
             if current_yield_pct <= -5.0:
-                # Math to calculate capital needed to average down asset base by 50%
                 avg_down_lumpsum = inv_cap * 0.20
                 st.markdown(f"""
                 <div class='status-accumulate'>
                     🛒 🚨 AUTOMATED CRASH RESERVE PROTOCOL TRIGGERED<br>
                     <span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>
-                        Market Correction Analysis: <b>{fund}</b> is down <b>{round(current_yield_pct, 2)}%</b> below your entry cost. Deploy a tactical lump-sum allocation of <b>₹{round(avg_down_lumpsum, 2)}</b> right now into this fund to average down your portfolio baseline and maximize recovery velocity.
+                        Market Correction Analysis: <b>{display_name}</b> is down <b>{round(current_yield_pct, 2)}%</b> below your entry cost. Deploy a tactical lump-sum allocation of <b>₹{round(avg_down_lumpsum, 2)}</b> right now into this fund to average down your portfolio baseline and maximize recovery velocity.
                     </span>
                 </div>
                 """, unsafe_allow_html=True)
                 
-            # Module B: PROGRESSIVE TRANCHE HARVESTING RADAR
             elif current_yield_pct >= tgt_yield:
-                # Tranche 1 calculation: Extract 50% of your gains above target boundary
                 target_value_boundary = inv_cap * (1 + (tgt_yield / 100))
                 surplus = current_market_val - target_value_boundary
                 tranche_cash_take = surplus * 0.50
@@ -189,12 +223,11 @@ if tracked_assets:
                 <div class='status-harvest'>
                     🚨 STRATEGIC TRANCHE HARVEST CEILING BREACHED<br>
                     <span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>
-                        Execution Order: Yield ({round(current_yield_pct, 2)}%) has cleared your target window (+{tgt_yield}%). Do not sell everything! Execute a <b>Tranche 1 Partial Redemption</b> of exactly <b>{round(units_to_sell, 3) if 'units_to_sell' in locals() else round(units_to_liquidate, 3)} units</b> (~₹{round(tranche_cash_take, 2)}) to lock in half your surplus profit into safe bank deposits while letting the rest ride momentum.
+                        Execution Order: Yield ({round(current_yield_pct, 2)}%) has cleared your target window (+{tgt_yield}%). Execute a <b>Tranche 1 Partial Redemption</b> of exactly <b>{round(units_to_liquidate, 3)} units</b> (~₹{round(tranche_cash_take, 2)}) to lock in half your surplus profit into safe bank deposits while letting the rest ride momentum.
                     </span>
                 </div>
                 """, unsafe_allow_html=True)
                 
-            # Module C: HOLD & ACCUMULATE
             else:
                 st.markdown(f"""
                 <div class='status-hold'>
@@ -282,4 +315,4 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 st.markdown("---")
-st.caption(f"P.A.S.E Ultimate Multi-Asset Suite Active | Terminal Node Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
+st.caption(f"P.A.S.E Universal Terminal Active | Terminal Node Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
