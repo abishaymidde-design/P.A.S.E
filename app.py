@@ -3,7 +3,7 @@ import datetime as dt
 import requests
 
 # --- SYSTEM INITIALIZATION & THEME CORES ---
-st.set_page_config(page_title="P.A.S.E. Automated Terminal", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="P.A.S.E. Custom Strategy Terminal", page_icon="🛡️", layout="wide")
 
 # Institutional Trading Interface Style Configuration
 st.markdown("""
@@ -22,8 +22,8 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Title Header Matrix
-st.title("🛡️ P.A.S.E. Automated Terminal")
-st.caption("Psychological Assistant for Stock Exchange • Live AMFI NAV Tracking v5.0")
+st.title("🛡️ P.A.S.E. Strategy Terminal")
+st.caption("Psychological Assistant for Stock Exchange • Custom Yield Harvesting v6.0")
 st.markdown("---")
 
 # --- AMFI LIVE TRACKER FUNCTION ---
@@ -61,26 +61,28 @@ with st.sidebar:
     
     # 2. Automated Selection Hub
     st.subheader("🗂️ 2. Select & Configure Fund")
-    
     selected_fund = st.selectbox("Choose your Nifty 50 Fund House:", list(FUND_DICTIONARY.keys()))
     
     # Automatically fetch live price based on selection
     target_code = FUND_DICTIONARY[selected_fund]["code"]
     fetched_nav = get_live_nav(target_code)
     
-    # Fallback to structural baseline price if connection lags
     if fetched_nav is None:
         fetched_nav = FUND_DICTIONARY[selected_fund]["fallback"]
         st.sidebar.warning("Using cached baseline price layer.")
     else:
         st.sidebar.success(f"Live NAV Connected: ₹{fetched_nav}")
     
-    # Inputs required from the user
     invested_capital = st.number_input("Total Money Invested (₹)", min_value=0.0, value=0.0, step=500.0)
     average_nav = st.number_input("Your Average Purchase NAV (₹)", min_value=0.0, value=0.0, step=1.0)
-    
-    # Hidden automated mapping
     current_nav = fetched_nav
+    
+    st.markdown("---")
+    
+    # 3. Custom Target Strategy Module
+    st.subheader("🎯 3. Profit Harvest Target")
+    user_target_yield = st.slider("Trigger Harvest Signal At (%)", min_value=5.0, max_value=30.0, value=12.0, step=0.5)
+    st.caption(f"System logic locked to fire alert at exactly **+{user_target_yield}%** returns.")
 
 # --- COMPUTE MATRIX EQUATIONS ---
 if invested_capital > 0 and current_nav > 0 and average_nav > 0:
@@ -91,12 +93,13 @@ if invested_capital > 0 and current_nav > 0 and average_nav > 0:
     net_profit = total_current_value - invested_capital
     total_yield = (net_profit / invested_capital) * 100
     
-    # Harvest target parameter logic ceiling (+12%)
-    target_portfolio_value = invested_capital * 1.12
+    # Harvest target parameter logic ceiling (Dynamic based on user input)
+    target_multiplier = 1 + (user_target_yield / 100)
+    target_portfolio_value = invested_capital * target_multiplier
     recommended_sip = (income * sip_pct) / 100
     
     # 1. Operational Insights Card
-    st.info(f"💡 **Target Strategy Vector:** Based on your earnings configuration, target a recurring installment pace of **₹{round(recommended_sip, 2)} / month** ({sip_pct}% allocation) into **{selected_fund}**.")
+    st.info(f"💡 **Target Strategy Vector:** Budgeting tracks an investment pace of **₹{round(recommended_sip, 2)} / month** into **{selected_fund}**. Engine will trigger capital liquidation sequences once absolute yield hits **+{user_target_yield}%**.")
 
     st.markdown("### 📊 Consolidated Investment Ledger")
     
@@ -115,7 +118,6 @@ if invested_capital > 0 and current_nav > 0 and average_nav > 0:
     with c4:
         st.markdown(f"<div class='card-container'><span class='section-header'>Absolute Portfolio Yield</span><h2 class='{p_class}'>{sign}{round(total_yield, 2)}%</h2></div>", unsafe_allow_html=True)
 
-    # Display Automated NAV Info Card
     st.caption(f"🤖 **Automated Pipeline Data Matrix:** Current asset price for **{selected_fund}** is pulled live at **₹{current_nav}** per unit.")
 
     # 2. Strategic Risk Allocation Distribution Layout
@@ -149,15 +151,15 @@ if invested_capital > 0 and current_nav > 0 and average_nav > 0:
     st.markdown("---")
     st.markdown("### 🚦 Execution Matrix Signals")
 
-    # 3. Execution Signal Assessment Matrix Loop
-    if total_yield >= 12.0:
+    # 3. Execution Signal Assessment Matrix Loop (Evaluated against User-Selected Target)
+    if total_yield >= user_target_yield:
         surplus_cash = total_current_value - target_portfolio_value
         units_to_harvest = surplus_cash / current_nav
         st.markdown(f"""
         <div class='status-harvest'>
             🚨 LIQUIDATION PROTOCOL ENGAGED • {selected_fund.upper()}<br>
             <span style='font-size:0.9rem; font-weight:normal; color:#c9d1d9;'>
-                Action: Asset has reached a performance yield of <b>{round(total_yield, 2)}%</b>. Redeem exactly <b>{round(units_to_harvest, 3)} units</b> via your trading terminal (Groww/Zerodha) and move the realized profit safely into your Core Shield reserves.
+                Action: Asset has breached your personalized performance ceiling of <b>{user_target_yield}%</b> (Current: {round(total_yield, 2)}%). Redeem exactly <b>{round(units_to_harvest, 3)} units</b> via your trading terminal and route the capital safely into your Core Shield bank fixed deposits.
             </span>
         </div>
         """, unsafe_allow_html=True)
@@ -166,13 +168,13 @@ if invested_capital > 0 and current_nav > 0 and average_nav > 0:
         <div class='status-hold'>
             🔵 SYSTEM STATUS: ACCUMULATING HOLD PROFILE<br>
             <span style='font-size:0.9rem; font-weight:normal; color:#c9d1d9;'>
-                {selected_fund} yield performance is tracking steady at {round(total_yield, 2)}% within baseline parameters. Maintain positions and continue regular systematic monthly installments.
+                {selected_fund} performance is tracking at {round(total_yield, 2)}%. Capital is steady below your targeted {user_target_yield}% harvest gateway threshold. Maintain current asset accumulation sequences.
             </span>
         </div>
         """, unsafe_allow_html=True)
 
 else:
-    st.info("### 📊 System Standby Matrix\n\nSlide open the left control configurations panel (`»`). Choose your Nifty 50 Fund House from the menu dropdown list and input your ledger parameters to arm your main dashboard dashboard pipeline.")
+    st.info("### 📊 System Standby Matrix\n\nSlide open the left control configurations panel (`»`). Choose your Nifty 50 Fund House from the menu dropdown list, calibrate your custom target harvest percentage, and input your ledger parameters to arm your main dashboard pipeline.")
 
 # 4. Long-Term Compound Velocity Forecaster Panel
 st.markdown("---")
@@ -199,4 +201,4 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 st.markdown("---")
-st.caption(f"P.A.S.E Automated Terminal Node Active | Global Grid Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
+st.caption(f"P.A.S.E Custom Terminal Node Active | Global Grid Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
