@@ -1,44 +1,44 @@
 import streamlit as st
 import datetime as dt
 import requests
-import pandas as pd
 
 # --- SYSTEM INITIALIZATION & THEME CORES ---
-st.set_page_config(page_title="P.A.S.E. Ultimate Multi-Fund Terminal", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="P.A.S.E. Multi-Fund Workspace", page_icon="🛡️", layout="wide")
 
-# Institutional Trading Interface Style Configuration
+# Institutional Cyberpunk Dark Interface Configuration
 st.markdown("""
     <style>
     .main { background-color: #0d1117; color: #c9d1d9; }
     div.stNumberInput > div > div > input { background-color: #161b22; color: #58a6ff; font-weight: bold; border: 1px solid #30363d; }
     div.stSelectbox > div { background-color: #161b22; }
     div.stSlider > div { background-color: #161b22; }
-    .card-container { background-color: #161b22; border: 1px solid #30363d; padding: 22px; border-radius: 8px; text-align: center; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-    .profit-positive { color: #39d353; font-weight: bold; font-size: 2rem; margin: 5px 0; }
-    .profit-negative { color: #f85149; font-weight: bold; font-size: 2rem; margin: 5px 0; }
-    .status-hold { background-color: #1f293d; border-left: 6px solid #58a6ff; padding: 20px; border-radius: 6px; color: #58a6ff; font-weight: bold; }
-    .status-harvest { background-color: #3c1e1e; border-left: 6px solid #f85149; padding: 20px; border-radius: 6px; color: #f85149; font-weight: bold; }
-    .section-header { color: #8b949e; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    .fund-card { background-color: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+    .metric-title { color: #8b949e; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-value { color: #ffffff; font-size: 1.6rem; font-weight: bold; margin-top: 2px; }
+    .status-hold { background-color: #1f293d; border-left: 6px solid #58a6ff; padding: 15px; border-radius: 6px; color: #58a6ff; font-weight: bold; margin-top: 10px; }
+    .status-harvest { background-color: #3c1e1e; border-left: 6px solid #f85149; padding: 15px; border-radius: 6px; color: #f85149; font-weight: bold; margin-top: 10px; }
+    .status-accumulate { background-color: #1e3c28; border-left: 6px solid #39d353; padding: 15px; border-radius: 6px; color: #39d353; font-weight: bold; margin-top: 10px; }
+    .badge-quality { background-color: #21262d; border: 1px solid #30363d; color: #8b949e; padding: 2px 8px; border-radius: 20px; font-size: 0.75rem; font-weight: normal; }
     </style>
     """, unsafe_allow_html=True)
 
 # Title Header Matrix
 st.title("🛡️ P.A.S.E. Multi-Fund Workspace")
-st.caption("Psychological Assistant for Stock Exchange • Advanced Multi-Asset AMFI Engine v7.1")
+st.caption("Psychological Assistant for Stock Exchange • Automated Capital Matrix v8.0")
 st.markdown("---")
 
-# --- AMFI LIVE TRACKER CORE ---
-@st.cache_data(ttl=3600)
+# --- AMFI LIVE TRACKER CENTRAL INTERNET REGISTRY ---
+@st.cache_data(ttl=1800) # Caches internet prices for 30 mins to run lightning fast
 def get_live_nav(amfi_code):
     try:
         url = f"https://api.mfapi.in/mf/{amfi_code}"
-        response = requests.get(url, timeout=10).json()
+        response = requests.get(url, timeout=5).json()
         return float(response["data"][0]["nav"])
     except:
         return None
 
-# Extended Global Mapping Scheme for Index & Active Alpha Funds
-FUND_DB = {
+# Hardcoded Official Tracking DB
+FUND_DATABASE = {
     "UTI Nifty 50 Index Fund": {"code": "120716", "fallback": 165.50},
     "HDFC Nifty 50 Index Fund": {"code": "119063", "fallback": 210.20},
     "SBI Nifty 50 Index Fund": {"code": "119551", "fallback": 230.10},
@@ -48,19 +48,11 @@ FUND_DB = {
     "Quant Small Cap Fund": {"code": "120847", "fallback": 240.60}
 }
 
-# --- INITIALIZE MULTI-ASSET SESSION MEMORY ---
-if 'portfolio' not in st.session_state:
-    st.session_state.portfolio = [
-        {"Fund Name": "UTI Nifty 50 Index Fund", "Invested Capital": 10000.0, "Average Buy NAV": 150.0, "Target Profit %": 12.0},
-        {"Fund Name": "Quant Small Cap Fund", "Invested Capital": 5000.0, "Average Buy NAV": 210.0, "Target Profit %": 15.0}
-    ]
-
-# --- SIDEBAR CONTROL CENTER ---
+# --- SIDEBAR CONTROL CONTROL PANEL ---
 with st.sidebar:
-    st.header("⚙️ TERMINAL CONFIGURATOR")
-    st.caption("Adjust your capital allocations and portfolio entries below.")
+    st.header("⚙️ SYSTEM CONTROL CENTER")
     
-    # 1. Budget Planner
+    # 1. Financial Income Planner
     st.subheader("💰 1. Allocation Planner")
     income = st.number_input("Monthly Income (₹)", min_value=0, value=50000, step=5000)
     sip_pct = st.slider("Target Allocation Pace (%)", min_value=5, max_value=50, value=15, step=5)
@@ -68,158 +60,205 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # 2. Dynamic Editable Portfolio Registry (Glitch-Proof Compatibility Version)
-    st.subheader("🗂️ 2. Active Portfolio Ledger")
-    st.caption("Double-click rows to modify fund choices, purchase history, and individual profit goals.")
+    # 2. Smart-Text Clipboard Module (Saves or restores entire multi-fund states)
+    st.subheader("💾 2. Smart-Text Setup Sync")
+    st.caption("Paste a backup string to load a profile, or copy the generated code below to save it.")
+    restore_string = st.text_input("Paste Smart-Text Code here:")
     
-    df_template = pd.DataFrame(st.session_state.portfolio)
-    edited_df = st.data_editor(
-        df_template,
-        num_rows="dynamic",
-        hide_index=True,
-        column_config={
-            "Fund Name": st.column_config.SelectboxColumn("Fund Name", options=list(FUND_DB.keys()), required=True),
-            "Invested Capital": st.column_config.NumberColumn("Invested Capital (₹)", min_value=0.0, step=500.0, required=True),
-            "Average Buy NAV": st.column_config.NumberColumn("Average Buy NAV (₹)", min_value=0.0, step=0.1, required=True),
-            "Target Profit %": st.column_config.NumberColumn("Target Profit %", min_value=1.0, max_value=50.0, step=0.5, required=True)
-        }
+    st.markdown("---")
+    st.subheader("🗂️ 3. Select Active Assets")
+    tracked_assets = st.multiselect(
+        "Choose funds to deploy in your workspace:",
+        list(FUND_DATABASE.keys()),
+        default=["UTI Nifty 50 Index Fund"]
     )
-    
-    if st.button("🔒 Sync Ledger & Compute"):
-        st.session_state.portfolio = edited_df.to_dict(orient="records")
-        st.success("Portfolio matrix locked!")
 
-# --- PROCESSING ENGINE CORE ---
-total_invested = 0.0
-total_current_value = 0.0
-harvest_protocols = []
-hold_protocols = []
-
-for row in st.session_state.portfolio:
+# --- AUTOMATED SMART-TEXT BACKUP GENERATOR SETUP ---
+parsed_backup_data = {}
+if restore_string:
     try:
-        name = row["Fund Name"]
-        invested = float(row["Invested Capital"])
-        avg_nav = float(row["Average Buy NAV"])
-        target_yield = float(row["Target Profit %"])
-        
-        if invested > 0 and avg_nav > 0 and name in FUND_DB:
-            # Fetch live asset valuation dynamically
-            amfi_code = FUND_DB[name]["code"]
-            live_nav = get_live_nav(amfi_code)
-            if live_nav is None:
-                live_nav = FUND_DB[name]["fallback"]
-                
-            # Run core trading formulas
-            units = invested / avg_nav
-            current_value = units * live_nav
-            net_return = current_value - invested
-            individual_yield = (net_return / invested) * 100
-            
-            total_invested += invested
-            total_current_value += current_value
-            
-            # Sort into active execution vectors
-            asset_data = {
-                "name": name, "yield": individual_yield, "invested": invested, 
-                "current": current_value, "units": units, "live_nav": live_nav,
-                "target": target_yield
-            }
-            
-            if individual_yield >= target_yield:
-                # Calculate required fractional units to trim back to the target ceiling
-                target_value = invested * (1 + (target_yield / 100))
-                surplus_cash = current_value - target_value
-                units_to_sell = surplus_cash / live_nav
-                asset_data["units_to_sell"] = units_to_sell
-                harvest_protocols.append(asset_data)
-            else:
-                hold_protocols.append(asset_data)
+        # Expected Format: UTI:10000:150:12|QUANT:5000:210:15
+        blocks = restore_string.split("|")
+        for b in blocks:
+            parts = b.split(":")
+            # Find short matching key from DB
+            for full_name in FUND_DATABASE.keys():
+                if parts[0].strip().lower() in full_name.lower():
+                    parsed_backup_data[full_name] = {
+                        "capital": float(parts[1]),
+                        "avg_nav": float(parts[2]),
+                        "target": float(parts[3])
+                    }
     except:
-        pass
+        st.sidebar.error("Invalid Smart-Text configuration string format.")
 
-# --- RENDER MAIN INTERFACE TERMINAL ---
-if total_invested > 0:
-    net_profit = total_current_value - total_invested
-    total_yield = (net_profit / total_invested) * 100
+# --- MAIN DASHBOARD CALCULATIONS ENGINE TRACKER ---
+global_invested = 0.0
+global_current_value = 0.0
+backup_string_list = []
+
+if tracked_assets:
     recommended_sip = (income * sip_pct) / 100
+    st.info(f"💡 **Target Strategy Vector:** Budget allocations tracking a total pace of **₹{round(recommended_sip, 2)} / month** across your active asset containers.")
     
-    st.info(f"💡 **Target Strategy Vector:** Budgeting tracks an investment pace of **₹{round(recommended_sip, 2)} / month** ({sip_pct}% allocation) across your active assets. Maintain systematic reserves.")
+    # Run through selected assets as independent stacked cards
+    for fund in tracked_assets:
+        # Load preset configuration parameters from user input or backup string
+        default_capital = 0.0
+        default_avg = 0.0
+        default_tgt = 12.0
+        
+        if fund in parsed_backup_data:
+            default_capital = parsed_backup_data[fund]["capital"]
+            default_avg = parsed_backup_data[fund]["avg_nav"]
+            default_tgt = parsed_backup_data[fund]["target"]
+            
+        st.markdown(f"""
+        <div class="fund-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; padding-bottom: 8px; margin-bottom: 15px;">
+                <span style="font-weight: bold; color: #58a6ff; font-size: 1.1rem;">📈 {fund}</span>
+                <span class="badge-quality">🏆 tracking quality: high (AMFI Active)</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Deploy individual user parameter input fields inside layout blocks
+        col_in1, col_in2, col_in3 = st.columns(3)
+        with col_in1:
+            inv_cap = st.number_input(f"Money Invested (₹)", min_value=0.0, value=default_capital, step=500.0, key=f"cap_{fund}")
+        with col_in2:
+            buy_nav = st.number_input(f"Your Average Purchase NAV (₹)", min_value=0.0, value=default_avg, step=1.0, key=f"nav_{fund}")
+        with col_in3:
+            tgt_yield = st.slider(f"Target Profit Exit (%)", min_value=5.0, max_value=30.0, value=default_tgt, step=0.5, key=f"tgt_{fund}")
+            
+        # Append configurations vector to master setup string registry
+        short_name = fund.split(" ")[0] # Extracts key token name (e.g. UTI or HDFC)
+        backup_string_list.append(f"{short_name}:{inv_cap}:{buy_nav}:{tgt_yield}")
 
-    st.markdown("### 📊 Consolidated Portfolio Ledger")
-    
-    # Master Institutional Metric Grid
-    c1, c2, c3, c4 = st.columns(4)
-    with c1:
-        st.markdown(f"<div class='card-container'><span class='section-header'>Total Capital Staked</span><h2 style='color:#ffffff; margin-top:5px;'>₹{round(total_invested, 2)}</h2></div>", unsafe_allow_html=True)
-    with c2:
-        st.markdown(f"<div class='card-container'><span class='section-header'>Current Market Value</span><h2 style='color:#00e5ff; margin-top:5px;'>₹{round(total_current_value, 2)}</h2></div>", unsafe_allow_html=True)
-    
-    p_class = "profit-positive" if net_profit >= 0 else "profit-negative"
-    sign = "+" if net_profit >= 0 else ""
-    
-    with c3:
-        st.markdown(f"<div class='card-container'><span class='section-header'>Net Returns Ledger</span><h2 class='{p_class}'>{sign}₹{round(net_profit, 2)}</h2></div>", unsafe_allow_html=True)
-    with c4:
-        st.markdown(f"<div class='card-container'><span class='section-header'>Absolute Portfolio Yield</span><h2 class='{p_class}'>{sign}{round(total_yield, 2)}%</h2></div>", unsafe_allow_html=True)
+        # Compute performance layers if values exist
+        if inv_cap > 0 and buy_nav > 0:
+            amfi_id = FUND_DATABASE[fund]["code"]
+            live_nav_price = get_live_nav(amfi_id)
+            if live_nav_price is None:
+                live_nav_price = FUND_DATABASE[fund]["fallback"]
+                
+            total_units_owned = inv_cap / buy_nav
+            current_market_val = total_units_owned * live_nav_price
+            net_profit_loss = current_market_val - inv_cap
+            current_yield_pct = (net_profit_loss / inv_cap) * 100
+            
+            global_invested += inv_cap
+            global_current_value += current_market_val
+            
+            # Sub-Card Data Metrics Render Grid Layout
+            c_m1, c_m2, c_m3 = st.columns(3)
+            with c_m1:
+                st.markdown(f"<span class='metric-title'>Current Value</span><div class='metric-value' style='color:#00e5ff;'>₹{round(current_market_val,2)}</div><caption style='font-size:0.75rem; color:#8b949e;'>Live NAV: ₹{live_nav_price}</caption>", unsafe_allow_html=True)
+            with c_m2:
+                sign_str = "+" if net_profit_loss >= 0 else ""
+                color_str = "#39d353" if net_profit_loss >= 0 else "#f85149"
+                st.markdown(f"<span class='metric-title'>Net Returns</span><div class='metric-value' style='color:{color_str};'>{sign_str}₹{round(net_profit_loss,2)}</div>", unsafe_allow_html=True)
+            with c_m3:
+                color_str = "#39d353" if net_profit_loss >= 0 else "#f85149"
+                st.markdown(f"<span class='metric-title'>Absolute Yield</span><div class='metric-value' style='color:{color_str};'>{sign_str}{round(current_yield_pct,2)}%</div>", unsafe_allow_html=True)
 
-    # Strategic Risk Allocation Distribution Layout
-    st.markdown("### 🛡️ Defensive Core Shield Distribution Balance")
-    total_wealth = total_current_value + fd_reserves
-    market_exposure_pct = (total_current_value / total_wealth) * 100
-    shield_pct = (fd_reserves / total_wealth) * 100
-    
-    col_chart1, col_chart2 = st.columns([3, 2])
-    with col_chart1:
+            # --- SYSTEM INTELLIGENT LOGIC GATE DEPLOYMENT LOOP ---
+            
+            # Module A: AUTOMATED "MARKET CRASH" ACCUMULATION CALCULATOR
+            if current_yield_pct <= -5.0:
+                # Math to calculate capital needed to average down asset base by 50%
+                avg_down_lumpsum = inv_cap * 0.20
+                st.markdown(f"""
+                <div class='status-accumulate'>
+                    🛒 🚨 AUTOMATED CRASH RESERVE PROTOCOL TRIGGERED<br>
+                    <span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>
+                        Market Correction Analysis: <b>{fund}</b> is down <b>{round(current_yield_pct, 2)}%</b> below your entry cost. Deploy a tactical lump-sum allocation of <b>₹{round(avg_down_lumpsum, 2)}</b> right now into this fund to average down your portfolio baseline and maximize recovery velocity.
+                    </span>
+                </div>
+                """, unsafe_allow_html=True)
+                
+            # Module B: PROGRESSIVE TRANCHE HARVESTING RADAR
+            elif current_yield_pct >= tgt_yield:
+                # Tranche 1 calculation: Extract 50% of your gains above target boundary
+                target_value_boundary = inv_cap * (1 + (tgt_yield / 100))
+                surplus = current_market_val - target_value_boundary
+                tranche_cash_take = surplus * 0.50
+                units_to_liquidate = tranche_cash_take / live_nav_price
+                
+                st.markdown(f"""
+                <div class='status-harvest'>
+                    🚨 STRATEGIC TRANCHE HARVEST CEILING BREACHED<br>
+                    <span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>
+                        Execution Order: Yield ({round(current_yield_pct, 2)}%) has cleared your target window (+{tgt_yield}%). Do not sell everything! Execute a <b>Tranche 1 Partial Redemption</b> of exactly <b>{round(units_to_sell, 3) if 'units_to_sell' in locals() else round(units_to_liquidate, 3)} units</b> (~₹{round(tranche_cash_take, 2)}) to lock in half your surplus profit into safe bank deposits while letting the rest ride momentum.
+                    </span>
+                </div>
+                """, unsafe_allow_html=True)
+                
+            # Module C: HOLD & ACCUMULATE
+            else:
+                st.markdown(f"""
+                <div class='status-hold'>
+                    🔵 CORE ACCUMULATION BUFFER STATUS SECURE<br>
+                    <span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>
+                        Current tracking yield is standing steady at {round(current_yield_pct, 2)}%. Capital profile rests safely within your specified +{tgt_yield}% target barrier logic fields. No tactical adjustments necessary.
+                    </span>
+                </div>
+                """, unsafe_allow_html=True)
+        st.markdown("<br><hr style='border: 1px solid #21262d;'><br>", unsafe_allow_html=True)
+
+    # --- COMPUTE CONSOLIDATED MASTER OVERVIEW PROFILE ---
+    if global_invested > 0:
+        st.markdown("### 📊 Master Consolidated Ledger")
+        g_profit = global_current_value - global_invested
+        g_yield = (g_profit / global_invested) * 100
+        
+        mc1, mc2, mc3, mc4 = st.columns(4)
+        with mc1:
+            st.markdown(f"<div class='card-container'><span class='section-header'>Aggregate Staked Capital</span><h2 style='color:#ffffff; margin-top:5px;'>₹{round(global_invested, 2)}</h2></div>", unsafe_allow_html=True)
+        with mc2:
+            st.markdown(f"<div class='card-container'><span class='section-header'>Combined Market Valuation</span><h2 style='color:#00e5ff; margin-top:5px;'>₹{round(global_current_value, 2)}</h2></div>", unsafe_allow_html=True)
+            
+        g_class = "profit-positive" if g_profit >= 0 else "profit-negative"
+        g_sign = "+" if g_profit >= 0 else ""
+        
+        with mc3:
+            st.markdown(f"<div class='card-container'><span class='section-header'>Consolidated Net Returns</span><h2 class='{g_class}'>{g_sign}₹{round(g_profit, 2)}</h2></div>", unsafe_allow_html=True)
+        with mc4:
+            st.markdown(f"<div class='card-container'><span class='section-header'>Aggregate Portfolio Yield</span><h2 class='{g_class}'>{g_sign}{round(g_yield, 2)}%</h2></div>", unsafe_allow_html=True)
+
+        # Strategic Risk Allocation Bar Display
+        st.markdown("### 🛡️ Defensive Core Shield Master Balance Bar")
+        net_worth_pool = global_current_value + fd_reserves
+        mkt_exposure = (global_current_value / net_worth_pool) * 100
+        cash_exposure = (fd_reserves / net_worth_pool) * 100
+        
         st.markdown(f"""
         <div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d;'>
             <div style='display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;'>
-                <span style='color: #58a6ff;'>📈 Combined Market Exposure ({round(market_exposure_pct, 1)}%)</span>
-                <span style='color: #39d353;'>🛡️ Core Shield Cash reserves ({round(shield_pct, 1)}%)</span>
+                <span style='color: #58a6ff;'>📈 Combined Market Risk Vector ({round(mkt_exposure, 1)}%)</span>
+                <span style='color: #39d353;'>🛡️ Core Shield Cash Security Layer ({round(cash_exposure, 1)}%)</span>
             </div>
             <div style='display: flex; height: 24px; border-radius: 4px; overflow: hidden;'>
-                <div style='width: {market_exposure_pct}%; background-color: #58a6ff;'></div>
-                <div style='width: {shield_pct}%; background-color: #39d353;'></div>
+                <div style='width: {mkt_exposure}%; background-color: #58a6ff;'></div>
+                <div style='width: {cash_exposure}%; background-color: #39d353;'></div>
+            </div>
+            <div style='text-align: center; color: #ffffff; font-weight: bold; font-size: 0.95rem; margin-top: 10px;'>
+                TOTAL INTEGRATED NET WORTH POOL: ₹{round(net_worth_pool, 2)}
             </div>
         </div>
         """, unsafe_allow_html=True)
-    with col_chart2:
-        st.markdown(f"""
-        <div style='background-color: #161b22; padding: 10px; border-radius: 6px; border: 1px solid #30363d; text-align: center; height: 56px;'>
-            <span style='font-size: 0.75rem; color: #8b949e;'>TOTAL COMBINED WEALTH</span><br>
-            <h4 style='color: #ffffff; margin: 0;'>₹{round(total_wealth, 2)}</h4>
-        </div>
-        """, unsafe_allow_html=True)
 
-    st.markdown("---")
-    st.markdown("### 🚦 Execution Matrix Signals")
+        # Render Active Smart-Text Backup Output Card
+        st.markdown("---")
+        st.markdown("### 💾 Master Fast Transfer Backup Node")
+        master_string_code = "|".join(backup_string_list)
+        st.code(master_string_code, language="text")
+        st.caption("Copy this entire line of code and save it in your phone notes. Next time, just paste it into the left sidebar to load your full configuration profile instantly!")
 
-    # Render Active Harvest Alerts
-    if len(harvest_protocols) > 0:
-        for asset in harvest_protocols:
-            st.markdown(f"""
-            <div class='status-harvest' style='margin-bottom:12px;'>
-                🚨 LIQUIDATION PROTOCOL ENGAGED • {asset['name'].upper()}<br>
-                <span style='font-size:0.9rem; font-weight:normal; color:#c9d1d9;'>
-                    Action: Asset yield has breached your custom target ceiling of <b>{asset['target']}%</b> (Current: {round(asset['yield'], 2)}%). Immediately redeem exactly <b>{round(asset['units_to_sell'], 3)} units</b> via your trading app terminal and route the capital into your fixed savings.
-                </span>
-            </div>
-            """, unsafe_allow_html=True)
-            
-    # Render Steady Accumulation Cards
-    if len(hold_protocols) > 0:
-        for asset in hold_protocols:
-            st.markdown(f"""
-            <div class='status-hold' style='margin-bottom:12px;'>
-                🔵 HOLD PROFILE SECURE • {asset['name'].upper()}<br>
-                <span style='font-size:0.9rem; font-weight:normal; color:#c9d1d9;'>
-                    Current yield is tracking steady at {round(asset['yield'], 2)}% (Target Gateway: {asset['target']}%). Maintain positions and continue routine budgeting accumulation.
-                </span>
-            </div>
-            """, unsafe_allow_html=True)
 else:
-    st.info("### 📊 System Standby Matrix\n\nSlide open the left configurator menu (`»`) to input your financial parameters, choose your fund mixes, and arm your consolidated dashboard analytics pipeline.")
+    st.info("### 📊 Workspace Idle Standby Grid\n\nOpen up the left control menu (`»`) and choose your target assets under **Select Active Assets** to spin up your dashboard terminals.")
 
-# Long-Term Compound Velocity Forecaster Panel
+# --- PERSISTENT CALCULATOR BASE ---
 st.markdown("---")
 st.markdown("### 🎯 Predictive Compound Horizon Playground")
 col_s1, col_s2, col_s3 = st.columns(3)
@@ -238,9 +277,9 @@ st.markdown(f"""
 <div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d; text-align: center;'>
     <span style='font-size: 0.85rem; color: #8b949e;'>REQUIRED SIP INSTALLMENT RADAR TO HIT TARGET</span><br>
     <h2 style='color: #39d353; margin-top: 5px;'>₹{round(required_monthly_sip, 2)} / month</h2>
-    <span style='font-size: 0.75rem; color: #8b949e;'>Compounding over {horizon_years} years at an growth evaluation velocity of {expected_return}%.</span>
+    <span style='font-size: 0.75rem; color: #8b949e;'>Compounding over {horizon_years} years at an annualized growth velocity baseline of {expected_return}%.</span>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("---")
-st.caption(f"P.A.S.E Multi-Fund Suite Active | Terminal Synchronized: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
+st.caption(f"P.A.S.E Ultimate Multi-Asset Suite Active | Terminal Node Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
