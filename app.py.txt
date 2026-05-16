@@ -1,0 +1,119 @@
+﻿P.A.S.E Code
+
+
+import streamlit as st
+import yfinance as yf
+import datetime
+
+
+# --- SYSTEM CONFIGURATION ---
+st.set_page_config(page_title="P.A.S.E. System", page_icon="📈", layout="centered")
+
+
+# Custom Dark/Clean Cyberpunk Style Injector
+st.markdown("""
+    <style>
+    .main { background-color: #0d0f12; color: #e0e6ed; }
+    div.stButton > button:first-child { background-color: #00ffcc; color: #0d0f12; font-weight: bold; border: none; }
+    div.stButton > button:first-child:hover { background-color: #00b399; color: #ffffff; }
+    .metric-card { background-color: #141923; border: 1px solid #1f293d; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+    .status-hold { color: #00bfff; font-weight: bold; font-size: 1.2rem; }
+    .status-trigger { color: #00ffcc; font-weight: bold; font-size: 1.2rem; animation: blinker 1.5s linear infinite; }
+    @keyframes blinker { 50% { opacity: 0; } }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+st.title("P.A.S.E. SYSTEM")
+st.subheader("Psychological Assistant for Stock Exchange")
+st.markdown("---")
+
+
+# --- DATA STORAGE ENGINE ---
+with st.sidebar:
+    st.header("System Parameters")
+    total_investment = st.number_input("Total Invested Capital (₹)", min_value=0.0, value=600.0, step=600.0)
+    total_units = st.number_input("Total Units Accumulated", min_value=0.0, value=0.0254, format="%.4f")
+    months_active = max(1.0, total_investment / 600.0)
+    
+    st.markdown("---")
+    st.markdown("**Fixed Metrics Logged:**")
+    st.markdown("- Income Baseline: ₹20,000")
+    st.markdown("- Total Monthly Engine: ₹2,000")
+    st.markdown(f"- Core Shield Accumulation: ₹{int(months_active * 1400)}")
+
+
+# --- ENGINE LOGIC ---
+@st.cache_data(ttl=3600)  # Cache market data for 1 hour to maximize speed
+def fetch_market_data():
+    try:
+        nifty = yf.Ticker("^NSEI")
+        hist = nifty.history(period="1d")
+        return round(hist['Close'].iloc[-1], 2)
+    except:
+        return 23643.50  # Stable fallback baseline if API fails temporarily
+
+
+current_nav = fetch_market_data()
+current_portfolio_value = total_units * current_nav
+total_profit = current_portfolio_value - total_investment
+
+
+# Calculate friction-adjusted net yield
+if total_profit > 0:
+    stcg_tax = total_profit * 0.20
+    exit_load = total_profit * 0.01
+    net_profit = total_profit - stcg_tax - exit_load
+    net_return = net_profit / total_investment
+else:
+    net_profit = total_profit
+    net_return = total_profit / total_investment if total_investment > 0 else 0.0
+
+
+# Weighted Average Cost Calculation
+avg_cost_nav = total_investment / total_units if total_units > 0 else 0.0
+
+
+# --- UI DISPLAY ---
+
+
+# Module 1: The Asset Matrix
+st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
+col1, col2 = st.columns(2)
+with col1:
+    st.metric(label="🛡️ CORE SHIELD (Fixed Deposits)", value=f"₹{int(months_active * 1400)}")
+with col2:
+    st.metric(label="🦅 SATELLITE PREDATOR (Nifty 50)", value=f"₹{round(current_portfolio_value, 2)}")
+st.markdown("</div>", unsafe_allow_html=True)
+
+
+# Module 2: Live Metric Tracker
+st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
+col3, col4, col5 = st.columns(3)
+with col3:
+    st.metric(label="Live Nifty 50 NAV", value=f"₹{current_nav}")
+with col4:
+    st.metric(label="Your Avg Cost NAV", value=f"₹{round(avg_cost_nav, 2)}")
+with col5:
+    st.metric(label="Net Performance", value=f"{round(net_return * 100, 2)}%")
+st.markdown("</div>", unsafe_allow_html=True)
+
+
+# Module 3: Logic Signal Gate
+st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
+st.markdown("### SYSTEM ENGINE STATUS")
+
+
+target_net_yield = 0.12
+if net_return >= target_net_yield:
+    st.markdown("<span class='status-trigger'>⚠️ TARGET HIT: EXECUTE 50/50 PROFIT HARVEST</span>", unsafe_allow_html=True)
+    harvest_target = total_profit * 0.50
+    units_to_sell = harvest_target / current_nav
+    st.success(f"Action Required: Redeem exactly **{round(units_to_sell, 4)} units** (~₹{round(harvest_target, 2)}) and sweep directly to your Core Shield bank account.")
+else:
+    st.markdown("<span class='status-hold'>🔵 STATUS: HOLD & ACCUMULATE UNITS</span>", unsafe_allow_html=True)
+    st.info("The algorithm detects nominal market parameters. No manual action allowed. Keep the automation running.")
+st.markdown("</div>", unsafe_allow_html=True)
+
+
+st.caption(f"P.A.S.E. Engine Live | Last checked: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} IST")
