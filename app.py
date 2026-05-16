@@ -162,6 +162,77 @@ with col_s3:
 # Back-compute required systematic investment amounts using financial compound matrix math
 r = (expected_return / 12) / 100
 n = horizon_years * 12
+required_monthly_sip = target_goal / (((1 + r)**n - 1) / r * (1 + r))
+
+st.markdown(f"""
+<div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d; text-align: center;'>
+    <span style='font-size: 0.85rem; color: #8b949e;'>REQUIRED SIP INSTALLMENT RADAR TO HIT TARGET</span><br>
+    <h2 style='color: #39d353; margin-top: 5px;'>₹{round(required_monthly_sip, 2)} / month</h2>
+    <span style='font-size: 0.75rem; color: #8b949e;'>Compounding over {horizon_years} years at an evaluation metric of {expected_return}% annualized growth velocity.</span>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+st.caption(f"P.A.S.E Ultimate Terminal Node Active | Global Grid Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
+                <span style='color: #58a6ff;'>📈 {selected_fund} Exposure ({round(market_exposure_pct, 1)}%)</span>
+                <span style='color: #39d353;'>🛡️ Core Shield Cash ({round(shield_pct, 1)}%)</span>
+            </div>
+            <div style='display: flex; height: 24px; border-radius: 4px; overflow: hidden;'>
+                <div style='width: {market_exposure_pct}%; background-color: #58a6ff;'></div>
+                <div style='width: {shield_pct}%; background-color: #39d353;'></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col_chart2:
+        st.markdown(f"""
+        <div style='background-color: #161b22; padding: 10px; border-radius: 6px; border: 1px solid #30363d; text-align: center; height: 56px;'>
+            <span style='font-size: 0.75rem; color: #8b949e;'>TOTAL COMBINED WEALTH</span><br>
+            <h4 style='color: #ffffff; margin: 0;'>₹{round(total_wealth, 2)}</h4>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("### 🚦 Execution Matrix Signals")
+
+    # 3. Execution Signal Assessment Matrix Loop
+    if total_yield >= 12.0:
+        surplus_cash = total_current_value - target_portfolio_value
+        units_to_harvest = surplus_cash / current_nav
+        st.markdown(f"""
+        <div class='status-harvest'>
+            🚨 LIQUIDATION PROTOCOL ENGAGED • {selected_fund.upper()}<br>
+            <span style='font-size:0.9rem; font-weight:normal; color:#c9d1d9;'>
+                Action: Asset has reached a performance yield of <b>{round(total_yield, 2)}%</b>. Redeem exactly <b>{round(units_to_harvest, 3)} units</b> via your trading terminal (Groww/Zerodha/Kite) and move the realized profit safely into your Core Shield reserves.
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+        <div class='status-hold'>
+            🔵 SYSTEM STATUS: ACCUMULATING HOLD PROFILE<br>
+            <span style='font-size:0.9rem; font-weight:normal; color:#c9d1d9;'>
+                {selected_fund} yield performance is tracking steady at {round(total_yield, 2)}% within baseline parameters. Maintain positions and continue regular systematic monthly installments.
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+
+else:
+    st.info("### 📊 System Standby Matrix\n\nSlide open the left control configurations panel (`»`). Choose your Nifty 50 Fund House from the menu dropdown list and input your ledger parameters to arm your main dashboard dashboard pipeline.")
+
+# 4. Long-Term Compound Velocity Forecaster Panel
+st.markdown("---")
+st.markdown("### 🎯 Predictive Compound Horizon Playground")
+col_s1, col_s2, col_s3 = st.columns(3)
+with col_s1:
+    target_goal = st.number_input("Target Corpus Goal (₹)", min_value=10000, value=500000, step=50000)
+with col_s2:
+    horizon_years = st.slider("Time Horizon Grid (Years)", min_value=1, max_value=30, value=5, step=1)
+with col_s3:
+    expected_return = st.slider("Expected Compounding Rate (CAGR %)", min_value=8, max_value=25, value=12, step=1)
+
+# Back-compute required systematic investment amounts using financial compound matrix math
+r = (expected_return / 12) / 100
+n = horizon_years * 12
 required_monthly_sip = target_goal / (((1 + r)**n - 1
     with c2:
         st.markdown(f"<div class='card-container'><span class='section-header'>Current Market Value</span><h2 style='color:#00e5ff; margin-top:5px;'>₹{round(total_current_value, 2)}</h2></div>", unsafe_allow_html=True)
