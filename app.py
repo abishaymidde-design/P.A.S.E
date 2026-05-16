@@ -12,7 +12,7 @@ st.markdown("""
     div.stNumberInput > div > div > input { background-color: #0f172a; color: #00e5ff; font-weight: bold; }
     .metric-card { background-color: #0b132b; border: 1px solid #1c2541; padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 10px; }
     .status-hold { background-color: #1e293b; border-left: 5px solid #38bdf8; padding: 15px; border-radius: 4px; font-weight: bold; color: #38bdf8; }
-    .status-harvest { background-color: #450a0a; border-left: 5px solid #f87171; padding: 15px; border-radius: 4px; font-weight: bold; color: #f87171; animation: pulse 2s infinite; }
+    .status-harvest { background-color: #450a0a; border-left: 5px solid #f87171; padding: 15px; border-radius: 4px; font-weight: bold; color: #f87171; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -21,9 +21,9 @@ st.subheader("Psychological Assistant for Stock Exchange")
 st.markdown("---")
 
 # --- MULTI-USER ISOLATION MATRIX ---
-# This layer forces unique sandbox memory profiles per user link access
+# Sets individual localized memory defaults per user session
 if 'user_capital' not in st.session_state:
-    st.session_state.user_capital = 1000.0
+    st.session_state.user_capital = 0.0
 if 'user_units' not in st.session_state:
     st.session_state.user_units = 0.0
 
@@ -32,12 +32,20 @@ with st.sidebar:
     st.header("👤 YOUR PARAMETERS")
     st.caption("Adjust inputs to compute your personalized tracking lifecycle.")
     
-    # Live updates mapped onto localized state memory
     st.session_state.user_capital = st.number_input(
         "Total Invested Capital (₹)", 
         min_value=0.0, 
         value=st.session_state.user_capital, 
         step=500.0
+    )
+    st.session_state.user_units = st.number_input(
+        "Total Mutual Fund Units", 
+        min_value=0.0, 
+        value=st.session_state.user_units, 
+        step=0.001, 
+        format="%.3f"
+    )
+
 # --- THE CALCULATOR PROCESSING GATE ---
 if st.session_state.user_capital > 0 and st.session_state.user_units > 0:
     try:
@@ -45,7 +53,7 @@ if st.session_state.user_capital > 0 and st.session_state.user_units > 0:
         nifty_ticker = yf.Ticker("^NSEI")
         nifty_current = nifty_ticker.history(period="1d")['Close'].iloc[-1]
     except:
-        # Fallback to structural safety baseline index valuation if network times out
+        # Fallback to safety baseline index valuation if yfinance network times out
         nifty_current = 23643.50
 
     # Execute system core equations safely
@@ -54,7 +62,7 @@ if st.session_state.user_capital > 0 and st.session_state.user_units > 0:
     net_profit_loss = current_value - st.session_state.user_capital
     yield_percentage = (net_profit_loss / st.session_state.user_capital) * 100
     
-    # Structural target calculation loops
+    # Target parameter equation logic
     target_value = st.session_state.user_capital * 1.12
     
     # Display Personal Metrics Dashboard Grid
