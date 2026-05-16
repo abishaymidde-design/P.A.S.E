@@ -1,117 +1,111 @@
-
 import streamlit as st
 import yfinance as yf
-import datetime
+import datetime as dt
 
+# --- THE SYSTEM MATRIX INITIALIZATION ---
+st.set_page_config(page_title="P.A.S.E. Engine", page_icon="🛡️", layout="centered")
 
-# --- SYSTEM CONFIGURATION ---
-st.set_page_config(page_title="P.A.S.E. System", page_icon="📈", layout="centered")
-
-
-# Custom Dark/Clean Cyberpunk Style Injector
+# Custom UI Dark Theme Injection
 st.markdown("""
     <style>
-    .main { background-color: #0d0f12; color: #e0e6ed; }
-    div.stButton > button:first-child { background-color: #00ffcc; color: #0d0f12; font-weight: bold; border: none; }
-    div.stButton > button:first-child:hover { background-color: #00b399; color: #ffffff; }
-    .metric-card { background-color: #141923; border: 1px solid #1f293d; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-    .status-hold { color: #00bfff; font-weight: bold; font-size: 1.2rem; }
-    .status-trigger { color: #00ffcc; font-weight: bold; font-size: 1.2rem; animation: blinker 1.5s linear infinite; }
-    @keyframes blinker { 50% { opacity: 0; } }
+    .main { background-color: #06090e; color: #cbd5e1; }
+    div.stNumberInput > div > div > input { background-color: #0f172a; color: #00e5ff; font-weight: bold; }
+    .metric-card { background-color: #0b132b; border: 1px solid #1c2541; padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 10px; }
+    .status-hold { background-color: #1e293b; border-left: 5px solid #38bdf8; padding: 15px; border-radius: 4px; font-weight: bold; color: #38bdf8; }
+    .status-harvest { background-color: #450a0a; border-left: 5px solid #f87171; padding: 15px; border-radius: 4px; font-weight: bold; color: #f87171; animation: pulse 2s infinite; }
     </style>
     """, unsafe_allow_html=True)
 
-
-st.title("P.A.S.E. SYSTEM")
+st.title("🛡️ P.A.S.E.")
 st.subheader("Psychological Assistant for Stock Exchange")
 st.markdown("---")
 
+# --- MULTI-USER ISOLATION MATRIX ---
+# This layer forces unique sandbox memory profiles per user link access
+if 'user_capital' not in st.session_state:
+    st.session_state.user_capital = 1000.0
+if 'user_units' not in st.session_state:
+    st.session_state.user_units = 0.0
 
-# --- DATA STORAGE ENGINE ---
+# Sidebar Input Control Centers (Isolated Parameters)
 with st.sidebar:
-    st.header("System Parameters")
-    total_investment = st.number_input("Total Invested Capital (₹)", min_value=0.0, value=600.0, step=600.0)
-    total_units = st.number_input("Total Units Accumulated", min_value=0.0, value=0.0254, format="%.4f")
-    months_active = max(1.0, total_investment / 600.0)
+    st.header("👤 YOUR PARAMETERS")
+    st.caption("Adjust inputs to compute your personalized tracking lifecycle.")
     
-    st.markdown("---")
-    st.markdown("**Fixed Metrics Logged:**")
-    st.markdown("- Income Baseline: ₹20,000")
-    st.markdown("- Total Monthly Engine: ₹2,000")
-    st.markdown(f"- Core Shield Accumulation: ₹{int(months_active * 1400)}")
+    # Live updates mapped onto localized state memory
+    st.session_state.user_capital = st.number_input(
+        "Total Invested Capital (₹)", 
+        min_value=0.0, 
+        value=st.session_state.user_capital, 
+        step=500.0
+    )
+    st.session_state.user_units = st.number_input(
+        "Total Mutual Fund Units", 
+        min_value=0.0, 
+        value=st.session_state.user_units, 
+        step=0.001, 
+        format="%.3f"
+    )
 
-
-# --- ENGINE LOGIC ---
-@st.cache_data(ttl=3600)  # Cache market data for 1 hour to maximize speed
-def fetch_market_data():
+# --- THE CALCULATOR PROCESSING GATE ---
+if st.session_state.user_capital > 0 and st.session_state.user_units > 0:
     try:
-        nifty = yf.Ticker("^NSEI")
-        hist = nifty.history(period="1d")
-        return round(hist['Close'].iloc[-1], 2)
+        # Fetch Live Market Close Layer (Nifty 50 Index)
+        nifty_ticker = yf.Ticker("^NSEI")
+        nifty_current = nifty_ticker.history(period="1d")['Close'].iloc[-1]
     except:
-        return 23643.50  # Stable fallback baseline if API fails temporarily
+        # Fallback to structural safety baseline index valuation if network times out
+        nifty_current = 23643.50
 
+    # Execute system core equations
+    current_value = st.session_state.user_units * nifty_current
+    avg_purchase_price = st.session_state.user_capital / st.session_state.user_units
+    net_profit_loss = current_value - st.session_state.user_capital
+    
+    # Calculate performance yields
+    yield_percentage = (net_profit_loss / st.session_state.user_capital) * 100
+    target_value = st.session_state.user_capital * 1.12
+    target_price_per_unit = target_value / st.session_state.user_units
+    
+    # Display Personal Metrics Dashboard Grid
+    st.markdown("### 📊 Your Portfolio Status")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"<div class='metric-card'><sup>Current Asset Value</sup><br><h2 style='color:#00e5ff;'>₹{round(current_value, 2)}</h2></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='metric-card'><sup>Your Average NAV Cost</sup><br><h4>₹{round(avg_purchase_price, 2)}</h4></div>", unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"<div class='metric-card'><sup>Net Yield Returns</sup><br><h2 style='color: {'#4ade80' if yield_percentage >= 0 else '#f87171'};'>{round(yield_percentage, 2)}%</h2></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='metric-card'><sup>Target Liquidate Price</sup><br><h4>₹{round(target_price_per_unit, 2)}</h4></div>", unsafe_allow_html=True)
 
-current_nav = fetch_market_data()
-current_portfolio_value = total_units * current_nav
-total_profit = current_portfolio_value - total_investment
+    st.markdown("---")
+    st.markdown("### 🚦 System Execution Signal")
 
-
-# Calculate friction-adjusted net yield
-if total_profit > 0:
-    stcg_tax = total_profit * 0.20
-    exit_load = total_profit * 0.01
-    net_profit = total_profit - stcg_tax - exit_load
-    net_return = net_profit / total_investment
+    # The Core Logic Trigger Gate (+12% yield evaluation loop)
+    if yield_percentage >= 12.0:
+        # Calculate exactly how much surplus unit volume needs to be harvested to lock profits
+        surplus_cash = current_value - target_value
+        units_to_harvest = surplus_cash / nifty_current
+        
+        st.markdown(f"""
+        <div class='status-harvest'>
+            🚨 TARGET HIGHLIGHTED: HARVEST PROFIT YIELD NOW<br>
+            <span style='font-size:0.9rem; font-weight:normal; color:#cbd5e1;'>
+                Action: Your portfolio has breached the +12% performance gate. Immediately liquidate exactly <b>{round(units_to_harvest, 3)} units</b> from your trading terminal and route the capital safely into your Core Shield bank fixed deposits.
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class='status-hold'>
+            🔵 STATUS PARAMETER: HOLD & ACCUMULATE<br>
+            <span style='font-size:0.9rem; font-weight:normal; color:#cbd5e1;'>
+                Action: Market volatility is within baseline thresholds. Maintain current holdings and continue routine installment accumulation sequences.
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
 else:
-    net_profit = total_profit
-    net_return = total_profit / total_investment if total_investment > 0 else 0.0
+    st.info("👋 Welcome to P.A.S.E. Allocation Terminal. Slide open the left parameters menu (`»`) to input your custom capital stakes and unit holdings to calculate your matrix tracking data.")
 
-
-# Weighted Average Cost Calculation
-avg_cost_nav = total_investment / total_units if total_units > 0 else 0.0
-
-
-# --- UI DISPLAY ---
-
-
-# Module 1: The Asset Matrix
-st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
-col1, col2 = st.columns(2)
-with col1:
-    st.metric(label="🛡️ CORE SHIELD (Fixed Deposits)", value=f"₹{int(months_active * 1400)}")
-with col2:
-    st.metric(label="🦅 SATELLITE PREDATOR (Nifty 50)", value=f"₹{round(current_portfolio_value, 2)}")
-st.markdown("</div>", unsafe_allow_html=True)
-
-
-# Module 2: Live Metric Tracker
-st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
-col3, col4, col5 = st.columns(3)
-with col3:
-    st.metric(label="Live Nifty 50 NAV", value=f"₹{current_nav}")
-with col4:
-    st.metric(label="Your Avg Cost NAV", value=f"₹{round(avg_cost_nav, 2)}")
-with col5:
-    st.metric(label="Net Performance", value=f"{round(net_return * 100, 2)}%")
-st.markdown("</div>", unsafe_allow_html=True)
-
-
-# Module 3: Logic Signal Gate
-st.markdown("<div class='metric-card'>", unsafe_allow_html=True)
-st.markdown("### SYSTEM ENGINE STATUS")
-
-
-target_net_yield = 0.12
-if net_return >= target_net_yield:
-    st.markdown("<span class='status-trigger'>⚠️ TARGET HIT: EXECUTE 50/50 PROFIT HARVEST</span>", unsafe_allow_html=True)
-    harvest_target = total_profit * 0.50
-    units_to_sell = harvest_target / current_nav
-    st.success(f"Action Required: Redeem exactly **{round(units_to_sell, 4)} units** (~₹{round(harvest_target, 2)}) and sweep directly to your Core Shield bank account.")
-else:
-    st.markdown("<span class='status-hold'>🔵 STATUS: HOLD & ACCUMULATE UNITS</span>", unsafe_allow_html=True)
-    st.info("The algorithm detects nominal market parameters. No manual action allowed. Keep the automation running.")
-st.markdown("</div>", unsafe_allow_html=True)
-
-
-st.caption(f"P.A.S.E. Engine Live | Last checked: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} IST")
+st.markdown("---")
+st.caption(f"P.A.S.E System Grid Live | Nifty Index Tracking Refreshed: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
