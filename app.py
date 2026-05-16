@@ -150,4 +150,98 @@ if total_invested > 0:
     # Master Institutional Metric Grid
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        st.markdown(f"<div class='card-container'><span class='section-header'>Total Capital Staked</span><h2 style='color:#ffffff; margin-top:5px;'>₹{round(total_invested,
+        st.markdown(f"<div class='card-container'><span class='section-header'>Total Capital Staked</span><h2 style='color:#ffffff; margin-top:5px;'>₹{round(total_invested, 2)}</h2></div>", unsafe_allow_html=True)
+    with c2:
+        st.markdown(f"<div class='card-container'><span class='section-header'>Current Market Value</span><h2 style='color:#00e5ff; margin-top:5px;'>₹{round(total_current_value, 2)}</h2></div>", unsafe_allow_html=True)
+    
+    p_class = "profit-positive" if net_profit >= 0 else "profit-negative"
+    sign = "+" if net_profit >= 0 else ""
+    
+    with c3:
+        st.markdown(f"<div class='card-container'><span class='section-header'>Net Returns Ledger</span><h2 class='{p_class}'>{sign}₹{round(net_profit, 2)}</h2></div>", unsafe_allow_html=True)
+    with c4:
+        st.markdown(f"<div class='card-container'><span class='section-header'>Absolute Portfolio Yield</span><h2 class='{p_class}'>{sign}{round(total_yield, 2)}%</h2></div>", unsafe_allow_html=True)
+
+    # Strategic Risk Allocation Distribution Layout
+    st.markdown("### 🛡️ Defensive Core Shield Distribution Balance")
+    total_wealth = total_current_value + fd_reserves
+    market_exposure_pct = (total_current_value / total_wealth) * 100
+    shield_pct = (fd_reserves / total_wealth) * 100
+    
+    col_chart1, col_chart2 = st.columns([3, 2])
+    with col_chart1:
+        st.markdown(f"""
+        <div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d;'>
+            <div style='display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;'>
+                <span style='color: #58a6ff;'>📈 Combined Market Exposure ({round(market_exposure_pct, 1)}%)</span>
+                <span style='color: #39d353;'>🛡️ Core Shield Cash reserves ({round(shield_pct, 1)}%)</span>
+            </div>
+            <div style='display: flex; height: 24px; border-radius: 4px; overflow: hidden;'>
+                <div style='width: {market_exposure_pct}%; background-color: #58a6ff;'></div>
+                <div style='width: {shield_pct}%; background-color: #39d353;'></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col_chart2:
+        st.markdown(f"""
+        <div style='background-color: #161b22; padding: 10px; border-radius: 6px; border: 1px solid #30363d; text-align: center; height: 56px;'>
+            <span style='font-size: 0.75rem; color: #8b949e;'>TOTAL COMBINED WEALTH</span><br>
+            <h4 style='color: #ffffff; margin: 0;'>₹{round(total_wealth, 2)}</h4>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("### 🚦 Execution Matrix Signals")
+
+    # Render Active Harvest Alerts
+    if len(harvest_protocols) > 0:
+        for asset in harvest_protocols:
+            st.markdown(f"""
+            <div class='status-harvest' style='margin-bottom:12px;'>
+                🚨 LIQUIDATION PROTOCOL ENGAGED • {asset['name'].upper()}<br>
+                <span style='font-size:0.9rem; font-weight:normal; color:#c9d1d9;'>
+                    Action: Asset yield has breached your custom target ceiling of <b>{asset['target']}%</b> (Current: {round(asset['yield'], 2)}%). Immediately redeem exactly <b>{round(asset['units_to_sell'], 3)} units</b> via your trading app terminal and route the capital into your fixed savings.
+                </span>
+            </div>
+            """, unsafe_allow_html=True)
+            
+    # Render Steady Accumulation Cards
+    if len(hold_protocols) > 0:
+        for asset in hold_protocols:
+            st.markdown(f"""
+            <div class='status-hold' style='margin-bottom:12px;'>
+                🔵 HOLD PROFILE SECURE • {asset['name'].upper()}<br>
+                <span style='font-size:0.9rem; font-weight:normal; color:#c9d1d9;'>
+                    Current yield is tracking steady at {round(asset['yield'], 2)}% (Target Gateway: {asset['target']}%). Maintain positions and continue routine budgeting accumulation.
+                </span>
+            </div>
+            """, unsafe_allow_html=True)
+else:
+    st.info("### 📊 System Standby Matrix\n\nSlide open the left configurator menu (`»`) to input your financial parameters, choose your fund mixes, and arm your consolidated dashboard analytics pipeline.")
+
+# Long-Term Compound Velocity Forecaster Panel
+st.markdown("---")
+st.markdown("### 🎯 Predictive Compound Horizon Playground")
+col_s1, col_s2, col_s3 = st.columns(3)
+with col_s1:
+    target_goal = st.number_input("Target Corpus Goal (₹)", min_value=10000, value=500000, step=50000)
+with col_s2:
+    horizon_years = st.slider("Time Horizon Grid (Years)", min_value=1, max_value=30, value=5, step=1)
+with col_s3:
+    expected_return = st.slider("Expected Compounding Rate (CAGR %)", min_value=8, max_value=25, value=12, step=1)
+
+r = (expected_return / 12) / 100
+n = horizon_years * 12
+required_monthly_sip = target_goal / (((1 + r)**n - 1) / r * (1 + r))
+
+st.markdown(f"""
+<div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d; text-align: center;'>
+    <span style='font-size: 0.85rem; color: #8b949e;'>REQUIRED SIP INSTALLMENT RADAR TO HIT TARGET</span><br>
+    <h2 style='color: #39d353; margin-top: 5px;'>₹{round(required_monthly_sip, 2)} / month</h2>
+    <span style='font-size: 0.75rem; color: #8b949e;'>Compounding over {horizon_years} years at an growth evaluation velocity of {expected_return}%.</span>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+st.caption(f"P.A.S.E Multi-Fund Suite Active | Terminal Synchronized: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
+    
