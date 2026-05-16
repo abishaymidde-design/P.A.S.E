@@ -24,7 +24,7 @@ st.markdown("""
 
 # Title Header Matrix
 st.title("🛡️ P.A.S.E. Multi-Fund Workspace")
-st.caption("Psychological Assistant for Stock Exchange • Advanced Multi-Asset AMFI Engine v7.0")
+st.caption("Psychological Assistant for Stock Exchange • Advanced Multi-Asset AMFI Engine v7.1")
 st.markdown("---")
 
 # --- AMFI LIVE TRACKER CORE ---
@@ -51,8 +51,8 @@ FUND_DB = {
 # --- INITIALIZE MULTI-ASSET SESSION MEMORY ---
 if 'portfolio' not in st.session_state:
     st.session_state.portfolio = [
-        {"Fund Name": "UTI Nifty 50 Index Fund", "Invested Capital": 10000.0, "Average Buy NAV": 150.0, "My Target %": 12.0},
-        {"Fund Name": "Quant Small Cap Fund", "Invested Capital": 5000.0, "Average Buy NAV": 210.0, "My Target %": 15.0}
+        {"Fund Name": "UTI Nifty 50 Index Fund", "Invested Capital": 10000.0, "Average Buy NAV": 150.0, "Target Profit %": 12.0},
+        {"Fund Name": "Quant Small Cap Fund", "Invested Capital": 5000.0, "Average Buy NAV": 210.0, "Target Profit %": 15.0}
     ]
 
 # --- SIDEBAR CONTROL CENTER ---
@@ -68,7 +68,7 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # 2. Dynamic Editable Portfolio Registry
+    # 2. Dynamic Editable Portfolio Registry (Glitch-Proof Compatibility Version)
     st.subheader("🗂️ 2. Active Portfolio Ledger")
     st.caption("Double-click rows to modify fund choices, purchase history, and individual profit goals.")
     
@@ -81,7 +81,7 @@ with st.sidebar:
             "Fund Name": st.column_config.SelectboxColumn("Fund Name", options=list(FUND_DB.keys()), required=True),
             "Invested Capital": st.column_config.NumberColumn("Invested Capital (₹)", min_value=0.0, step=500.0, required=True),
             "Average Buy NAV": st.column_config.NumberColumn("Average Buy NAV (₹)", min_value=0.0, step=0.1, required=True),
-            "My Target %": st.column_config.SliderColumn("My Target %", min_value=5.0, max_value=30.0, step=0.5, default=12.0)
+            "Target Profit %": st.column_config.NumberColumn("Target Profit %", min_value=1.0, max_value=50.0, step=0.5, required=True)
         }
     )
     
@@ -100,7 +100,7 @@ for row in st.session_state.portfolio:
         name = row["Fund Name"]
         invested = float(row["Invested Capital"])
         avg_nav = float(row["Average Buy NAV"])
-        target_yield = float(row["My Target %"])
+        target_yield = float(row["Target Profit %"])
         
         if invested > 0 and avg_nav > 0 and name in FUND_DB:
             # Fetch live asset valuation dynamically
@@ -244,4 +244,3 @@ st.markdown(f"""
 
 st.markdown("---")
 st.caption(f"P.A.S.E Multi-Fund Suite Active | Terminal Synchronized: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
-    
