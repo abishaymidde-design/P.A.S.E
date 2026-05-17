@@ -2,6 +2,7 @@ import streamlit as st
 import datetime as dt
 import requests
 import urllib.parse
+import pandas as pd
 
 # --- SYSTEM INITIALIZATION & THEME CORES ---
 st.set_page_config(page_title="P.A.S.E. Pro Workspace", page_icon="🛡️", layout="wide")
@@ -26,16 +27,17 @@ st.markdown("""
     .section-header { color: #8b949e; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
     .badge-quality { background-color: #21262d; border: 1px solid #30363d; color: #58a6ff; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
     .badge-settlement { background-color: #1b1f24; border: 1px solid #21262d; color: #8b949e; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; display: inline-block; margin-top: 5px; }
+    .chart-box { background-color: #161b22; border: 1px solid #30363d; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
     </style>
     """, unsafe_allow_html=True)
 
 # Main Title Stack Header
 st.title("🛡️ P.A.S.E. Pro Workspace")
-st.caption("Psychological Assistant for Stock Exchange • Automated Capital Matrix v12.0")
+st.caption("Psychological Assistant for Stock Exchange • Live Analytics Visualization Engine v13.0")
 st.markdown("---")
 
 # --- GLOBAL LIVE AMFI AUTOMATION INTERNET ENGINES ---
-@st.cache_data(ttl=86400) # Deep cache master names for 24 hours to enforce blistering fast query execution
+@st.cache_data(ttl=86400)
 def load_global_amfi_directory():
     try:
         url = "https://api.mfapi.in/mf"
@@ -44,7 +46,7 @@ def load_global_amfi_directory():
     except:
         return {}
 
-@st.cache_data(ttl=1800) # Quick cache live NAV ticks for 30 mins to preserve server memory
+@st.cache_data(ttl=1800)
 def get_live_nav_price(amfi_code):
     if not amfi_code:
         return None
@@ -91,7 +93,7 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # 2. Blazing Fast AMFI Intelligent Localized Search Hub
+    # 2. Universal Search Hub
     st.subheader("🔍 2. Universal Asset Registry Search")
     st.caption("Type any fund keyword to immediately isolate targets out of the live master registry.")
     search_query = st.text_input("Enter Fund House / Asset Keyword:", value="")
@@ -111,20 +113,54 @@ with st.sidebar:
         default=[n for n in filtered_options if any(GLOBAL_AMFI_DB.get(n) == ra["code"] for ra in recovered_assets)] if recovered_assets else []
     )
 
-# --- EXECUTE CALCULATION MATRIX LOOPS ---
+# --- MASTER COMPILATION POOLS ---
 global_staked_capital = 0.0
 global_current_market_value = 0.0
 url_state_builder = []
+
+# Visualization data holders
+yield_chart_data = {}
+composition_chart_data = {}
 
 if selected_search_assets and selected_search_assets != ["Search for an asset above..."]:
     recommended_sip = (income * sip_pct) / 100
     st.info(f"💡 **Target Strategy Vector:** System parameters tracking an ongoing investment pacing target of **₹{round(recommended_sip, 2)} / month** across active structures.")
     
+    # -------------------------------------------------------------
+    # PASS 1: Calculate metrics and collect data vectors for graphs
+    # -------------------------------------------------------------
     for fund_name in selected_search_assets:
         if fund_name not in GLOBAL_AMFI_DB:
             continue
-            
         scheme_code = GLOBAL_AMFI_DB[fund_name]
+        
+        default_cap, default_buy, default_tgt, default_vol = 0.0, 0.0, 12.0, 50.0
+        for ra in recovered_assets:
+            if ra["code"] == scheme_code:
+                default_cap, default_buy, default_tgt, default_vol = ra["capital"], ra["buy_nav"], ra["target"], ra["vol"]
+        
+        # Create unique keys for session states to avoid widget redraw glitches
+        inv_cap = st.sidebar.hidden = query_params.get(f"c_{scheme_code}", default_cap)
+        buy_nav = st.sidebar.hidden = query_params.get(f"n_{scheme_code}", default_buy)
+        
+        # Short clean token for graph legends (e.g., "UTI Nifty 50" instead of full 80-char string)
+        short_label = fund_name.replace(" (Direct Growth)", "").replace(" Fund", "")
+        short_label = (short_label[:22] + '..') if len(short_label) > 24 else short_label
+
+        # Read actual runtime inputs later down the layout thread, but prepare mathematical buffers
+        url_state_builder.append(f"{scheme_code}")
+
+    # -------------------------------------------------------------
+    # PASS 2: Live UI Card Rendering and Algorithmic Parsing
+    # -------------------------------------------------------------
+    compiled_cards_data = []
+    
+    for fund_name in selected_search_assets:
+        if fund_name not in GLOBAL_AMFI_DB:
+            continue
+        scheme_code = GLOBAL_AMFI_DB[fund_name]
+        short_label = fund_name.replace(" (Direct Growth)", "").replace(" Fund", "")
+        short_label = (short_label[:22] + '..') if len(short_label) > 24 else short_label
         
         default_cap, default_buy, default_tgt, default_vol = 0.0, 0.0, 12.0, 50.0
         for ra in recovered_assets:
@@ -135,7 +171,7 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
         <div class="fund-card">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; padding-bottom: 8px; margin-bottom: 15px;">
                 <span style="font-weight: bold; color: #58a6ff; font-size: 1.1rem;">📈 {fund_name}</span>
-                <span class="badge-quality">AMFI ID: {scheme_code} • Live Stream Secure</span>
+                <span class="badge-quality">AMFI ID: {scheme_code} • System Monitored</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -150,7 +186,8 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
         with col_f4:
             tranche_vol = st.slider("Harvest Volume Size (%)", min_value=10, max_value=100, value=int(default_vol), step=5, key=f"v_{scheme_code}")
             
-        url_state_builder.append(f"{scheme_code}:{inv_cap}:{buy_nav}:{tgt_yield}:{tranche_vol}")
+        # Re-verify and rebuild exact active string structures
+        url_state_builder[-1] = f"{scheme_code}:{inv_cap}:{buy_nav}:{tgt_yield}:{tranche_vol}"
 
         if inv_cap > 0 and buy_nav > 0:
             live_nav_tick = get_live_nav_price(scheme_code)
@@ -165,9 +202,13 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
             global_staked_capital += inv_cap
             global_current_market_value += current_valuation
             
+            # Map values out to charts registries
+            yield_chart_data[short_label] = round(current_yield_rate, 2)
+            composition_chart_data[short_label] = round(current_valuation, 2)
+            
             cm1, cm2, cm3 = st.columns(3)
             with cm1:
-                st.markdown(f"<span class='metric-title'>Current Valuation</span><div class='metric-value' style='color:#00e5ff;'>₹{round(current_valuation, 2)}</div><caption style='font-size:0.75rem; color:#8b949e;'>Live NAV Asset Price: ₹{live_nav_tick}</caption>", unsafe_allow_html=True)
+                st.markdown(f"<span class='metric-title'>Current Valuation</span><div class='metric-value' style='color:#00e5ff;'>₹{round(current_valuation, 2)}</div><caption style='font-size:0.75rem; color:#8b949e;'>Live NAV Price: ₹{live_nav_tick}</caption>", unsafe_allow_html=True)
             with cm2:
                 s_char = "+" if net_p_l >= 0 else ""
                 s_color = "#39d353" if net_p_l >= 0 else "#f85149"
@@ -175,65 +216,44 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
             with cm3:
                 st.markdown(f"<span class='metric-title'>Current Absolute Yield</span><div class='metric-value' style='color:{s_color};'>{s_char}{round(current_yield_rate, 2)}%</div>", unsafe_allow_html=True)
 
-            # --- SYSTEM RULES-BASED ALGORITHMIC DEFENSIVE LADDER LOOPS ---
+            # Execution alerts loop
             if current_yield_rate <= -15.0:
                 heavy_crash_lumpsum = inv_cap * 0.50
-                st.markdown(f"""
-                <div class='status-accumulate' style='border-left: 6px solid #ff1111; background-color: #4a1515; color: #ff5555;'>
-                    🚨 🏛️ TARGET SYSTEM LAYER UNDER MAXIMUM CRASH DISCOUNT LAYER<br>
-                    <span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>
-                        Execution Order: <b>{fund_name}</b> has collapsed heavily down to <b>{round(current_yield_rate, 2)}%</b> below cost. Deploy exactly <b>50%</b> of your cash reserves buffer (~₹{round(heavy_crash_lumpsum, 2)}) as a major manual buy execution order immediately to average down your portfolio and leverage massive future compounding momentum.
-                    </span>
-                </div>
-                """, unsafe_allow_html=True)
-                
+                st.markdown(f"<div class='status-accumulate' style='border-left: 6px solid #ff1111; background-color: #4a1515; color: #ff5555;'>🚨 MAXIMUM CRASH ACCUMULATION PROMPT engaged<br><span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>Action: Asset down <b>{round(current_yield_rate, 2)}%</b>. Deploy <b>50% cash buffer</b> (~₹{round(heavy_crash_lumpsum, 2)}) to exploit major institutional cycle recovery vectors.</span></div>", unsafe_allow_html=True)
             elif -15.0 < current_yield_rate <= -10.0:
                 major_correction_lumpsum = inv_cap * 0.30
-                st.markdown(f"""
-                <div class='status-accumulate' style='border-left: 6px solid #ff9100; background-color: #3d2314; color: #ff9100;'>
-                    🛒 🛡️ DEFENSIVE LADDER PROTOCOL ENGAGED • TRANCHE B DETECTED<br>
-                    <span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>
-                        Correction Order: Asset has plunged into major tracking territory down at <b>{round(current_yield_rate, 2)}%</b>. Deploy exactly <b>30%</b> of your liquid cash cushion (~₹{round(major_correction_lumpsum, 2)}) right now into your trading console to secure a powerful chunk of cheap asset units.
-                    </span>
-                </div>
-                """, unsafe_allow_html=True)
-                
+                st.markdown(f"<div class='status-accumulate' style='border-left: 6px solid #ff9100; background-color: #3d2314; color: #ff9100;'>🛒 DEFENSIVE LADDER • TRANCHE B PROMPT engaged<br><span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>Action: Asset down <b>{round(current_yield_rate, 2)}%</b>. Deploy <b>30% cash cushion</b> (~₹{round(major_correction_lumpsum, 2)}) to accumulate heavy premium units at a discount.</span></div>", unsafe_allow_html=True)
             elif -10.0 < current_yield_rate <= -5.0:
                 minor_dip_lumpsum = inv_cap * 0.15
-                st.markdown(f"""
-                <div class='status-accumulate'>
-                    🛒 🩹 DEFENSIVE LADDER ACTIVE • TRANCHE A ENGAGED<br>
-                    <span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>
-                        Dip Order: Performance tracks at a minor drawdown entry point of <b>{round(current_yield_rate, 2)}%</b>. Commit a calculated <b>15% entry slice</b> (~₹{round(minor_dip_lumpsum, 2)}) from your reserves to begin averaging down your entry cost basis smoothly.
-                    </span>
-                </div>
-                """, unsafe_allow_html=True)
-                
+                st.markdown(f"<div class='status-accumulate'>🛒 DEFENSIVE LADDER • TRANCHE A PROMPT engaged<br><span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>Action: Asset down <b>{round(current_yield_rate, 2)}%</b>. Deploy a cautious <b>15% entry slice</b> (~₹{round(minor_dip_lumpsum, 2)}) to begin cost-averaging down safely.</span></div>", unsafe_allow_html=True)
             elif current_yield_rate >= tgt_yield:
                 target_value_baseline = inv_cap * (1 + (tgt_yield / 100))
                 raw_surplus_cash = current_valuation - target_value_baseline
                 custom_tranche_cash_trim = raw_surplus_cash * (tranche_vol / 100)
                 units_to_liquidate = custom_tranche_cash_trim / live_nav_tick
-                
-                st.markdown(f"""
-                <div class='status-harvest'>
-                    🚨 STRATEGIC CEILING BREACH • TRANCHE EXECUTION MANDATED<br>
-                    <span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>
-                        Execution Order: Yield performance ({round(current_yield_rate, 2)}%) has successfully breached your custom profit gateway (+{tgt_yield}%). Execute a targeted <b>Tranche Partial Redemption of {tranche_vol}% of surplus gains</b> by selling exactly <b>{round(units_to_liquidate, 3)} units</b> (~₹{round(custom_tranche_cash_trim, 2)}) via Groww/Zerodha, routing the proceeds straight into your secure Core Shield cash reserves.
-                    </span>
-                </div>
-                """, unsafe_allow_html=True)
-                
+                st.markdown(f"<div class='status-harvest'>🚨 STRATEGIC EXIT BREED • TRANCHEA EXECUTION ENGAGED<br><span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>Action: Yield has cleared target threshold (+{tgt_yield}%). Redeem exactly <b>{round(units_to_liquidate, 3)} units</b> (~₹{round(custom_tranche_cash_trim, 2)}) on your broker dashboard to secure {tranche_vol}% of surplus profit.</span></div>", unsafe_allow_html=True)
             else:
-                st.markdown(f"""
-                <div class='status-hold'>
-                    🔵 STANDARD BUFFER ACCUMULATION MODE HOLD SECURE<br>
-                    <span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>
-                        Current tracking metrics show a stable hold profile at {round(current_yield_rate, 2)}%. Asset values oscillate safely beneath your designated +{tgt_yield}% harvest strategy window logic loops. Maintain active routine systematic monthly deposits.
-                    </span>
-                </div>
-                """, unsafe_allow_html=True)
+                st.markdown(f"<div class='status-hold'>🔵 CORE ACCUMULATION STATUS SECURE<br><span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>Current yield at {round(current_yield_rate, 2)}%. Asset runs smoothly below your designated +{tgt_yield}% harvest target gate. Maintain systematic deployment positions.</span></div>", unsafe_allow_html=True)
         st.markdown("<br><hr style='border: 1px solid #21262d;'><br>", unsafe_allow_html=True)
+
+    # -------------------------------------------------------------
+    # PASS 3: Display Live Interactive Visual Charts Deck Top Tier
+    # -------------------------------------------------------------
+    if yield_chart_data or composition_chart_data:
+        st.markdown("### 📊 Live Analytics Performance Dashboard")
+        col_ch1, col_ch2 = st.columns(2)
+        
+        with col_ch1:
+            st.markdown("<div class='chart-box'><span class='section-header'>📈 Multi-Fund Absolute Yield Radar (%)</span><br><br></div>", unsafe_allow_html=True)
+            # Render a native interactive vertical bar chart showing performance velocities side by side
+            df_yields = pd.DataFrame(list(yield_chart_data.items()), columns=['Asset Name', 'Yield (%)']).set_index('Asset Name')
+            st.bar_chart(df_yields, height=220)
+            
+        with col_ch2:
+            st.markdown("<div class='chart-box'><span class='section-header'>💎 Market Capital Concentration Allocation (₹)</span><br><br></div>", unsafe_allow_html=True)
+            # Render a structural bar chart showing exactly where their capital scale blocks are concentrated
+            df_comp = pd.DataFrame(list(composition_chart_data.items()), columns=['Asset Name', 'Current Value (₹)']).set_index('Asset Name')
+            st.bar_chart(df_comp, height=220)
 
     # --- COMPUTE COMPREHENSIVE OVERVIEW PROFILE DASHBOARDS ---
     if global_staked_capital > 0:
@@ -258,27 +278,22 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
         # Strategic Risk Shield Balance Indicator Bar Chart
         st.markdown("### 🛡️ Defensive Core Shield Master Balance Bar")
         total_integrated_wealth = global_current_market_value + fd_reserves
-        mkt_exposure_pct = (global_current_market_value / total_integrated_wealth) * 100
-        shield_reserve_pct = (fd_reserves / total_integrated_wealth) * 100
+        mkt_exposure_pct = (global_current_market_value / total_integrated_wealth)
+        shield_reserve_pct = (fd_reserves / total_integrated_wealth)
         
+        # Deploy native high-performance structural progress containers to avoid canvas loading delays
         st.markdown(f"""
-        <div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d;'>
-            <div style='display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px;'>
-                <span style='color: #58a6ff;'>📈 Combined Market Risk Allocation ({round(mkt_exposure_pct, 1)}%)</span>
-                <span style='color: #39d353;'>🛡️ Core Shield Cash Cushion reserves ({round(shield_reserve_pct, 1)}%)</span>
-            </div>
-            <div style='display: flex; height: 24px; border-radius: 4px; overflow: hidden;'>
-                <div style='width: {mkt_exposure_pct}%; background-color: #58a6ff;'></div>
-                <div style='width: {shield_reserve_pct}%; background-color: #39d353;'></div>
-            </div>
-            <div style='text-align: center; color: #ffffff; font-weight: bold; font-size: 0.95rem; margin-top: 10px;'>
-                TOTAL INTEGRATED WEALTH POOL VALUE: ₹{round(total_integrated_wealth, 2)}
+        <div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d; margin-bottom: 20px;'>
+            <div style='display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px;'>
+                <span style='color: #58a6ff;'>📈 Combined Market Risk Allocation ({round(mkt_exposure_pct * 100, 1)}%)</span>
+                <span style='color: #39d353;'>🛡️ Core Shield Cash Security Layer ({round(shield_reserve_pct * 100, 1)}%)</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
+        st.progress(mkt_exposure_pct)
+        st.markdown(f"<div style='text-align: center; color: #ffffff; font-weight: bold; font-size: 0.95rem; margin-top: -5px; margin-bottom:25px;'>TOTAL INTEGRATED WEALTH POOL VALUE: ₹{round(total_integrated_wealth, 2)}</div>", unsafe_allow_html=True)
 
         # --- BACKGROUND AUTOMATED STATE SYNC ENGINE ---
-        # Automatically updates the URL parameters silently without requiring a click action
         raw_state_string = "|".join(url_state_builder)
         st.query_params.update(inc=income, sip=sip_pct, shd=fd_reserves, state=raw_state_string)
 
@@ -294,19 +309,4 @@ with col_s1:
 with col_s2:
     horizon_years = st.slider("Time Horizon Grid (Years)", min_value=1, max_value=30, value=5, step=1)
 with col_s3:
-    expected_return = st.slider("Expected Compounding Rate (CAGR %)", min_value=8, max_value=25, value=12, step=1)
-
-r = (expected_return / 12) / 100
-n = horizon_years * 12
-required_monthly_sip = target_goal / (((1 + r)**n - 1) / r * (1 + r))
-
-st.markdown(f"""
-<div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d; text-align: center;'>
-    <span style='font-size: 0.85rem; color: #8b949e;'>REQUIRED SIP INSTALLMENT RADAR TO HIT TARGET</span><br>
-    <h2 style='color: #39d353; margin-top: 5px;'>₹{round(required_monthly_sip, 2)} / month</h2>
-    <span style='font-size: 0.75rem; color: #8b949e;'>Compounding over {horizon_years} years at an annualized growth velocity baseline of {expected_return}%.</span>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("---")
-st.caption(f"P.A.S.E Pro Terminal Network Active | Grid Node System Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
+    expected_retu
