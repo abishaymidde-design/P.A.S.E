@@ -16,26 +16,18 @@ st.markdown("""
     div.stSelectbox > div { background-color: #161b22; }
     div.stSlider > div { background-color: #161b22; }
     div.stTextInput > div > div > input { background-color: #161b22; color: #ffffff; border: 1px solid #30363d; }
-    .fund-card { background-color: #161b22; border: 1px solid #30363d; padding: 22px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
-    .metric-title { color: #8b949e; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-    .metric-value { color: #ffffff; font-size: 1.8rem; font-weight: bold; margin-top: 2px; }
-    .status-hold { background-color: #1f293d; border-left: 6px solid #58a6ff; padding: 18px; border-radius: 6px; color: #58a6ff; font-weight: bold; margin-top: 12px; }
-    .status-harvest { background-color: #3c1e1e; border-left: 6px solid #f85149; padding: 18px; border-radius: 6px; color: #f85149; font-weight: bold; margin-top: 12px; }
-    .status-accumulate { background-color: #1e3c28; border-left: 6px solid #39d353; padding: 18px; border-radius: 6px; color: #39d353; font-weight: bold; margin-top: 12px; }
     .card-container { background-color: #161b22; border: 1px solid #30363d; padding: 22px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
     .profit-positive { color: #39d353; font-weight: bold; font-size: 1.8rem; margin: 5px 0; }
     .profit-negative { color: #f85149; font-weight: bold; font-size: 1.8rem; margin: 5px 0; }
     .section-header { color: #8b949e; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-    .badge-quality { background-color: #21262d; border: 1px solid #30363d; color: #58a6ff; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
     .badge-settlement { background-color: #1b1f24; border: 1px solid #21262d; color: #8b949e; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; display: inline-block; margin-top: 5px; }
     .chart-box { background-color: #161b22; border: 1px solid #30363d; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-    .sip-badge { background-color: #1f242c; border: 1px solid #388bfd; color: #58a6ff; padding: 4px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; display: inline-block; margin-top: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
 # Main Title Stack Header
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption("Psychological Assistant for Stock Exchange • Cross-Asset Multi-Engine v15.1")
+st.caption("Psychological Assistant for Stock Exchange • Cross-Asset Multi-Engine v15.2")
 st.markdown("---")
 
 # --- PATH A: AUTOMATED INDIAN CURRENCY FORMATTER MATRIX ---
@@ -148,7 +140,7 @@ with st.sidebar:
         selected_search_assets = st.multiselect("Deploy Funds into workspace:", options=all_mf_options, default=saved_mf_names)
         stock_tickers_list = saved_stock_tickers
     else:
-        st.caption("💡 Enter tickers matching Yahoo Finance codes (e.g., RELIANCE.NS, INFY.NS)")
+        st.caption("💡 Enter Yahoo Finance tickers (e.g., RELIANCE.NS, INFY.NS)")
         stock_input = st.text_input("Enter Ticker Code + Press Enter:", value="")
         if stock_input and stock_input.upper() not in saved_stock_tickers:
             saved_stock_tickers.append(stock_input.upper())
@@ -186,9 +178,9 @@ if total_active_assets_count > 0:
             if ra["type"] == "MF" and ra["code"] == scheme_code:
                 default_cap, default_buy, default_tgt, default_vol = ra["capital"], ra["buy_nav"], ra["target"], ra["vol"]
                 
-        # Clean header execution avoiding nested string collision bugs
+        # Pure native Streamlit layout headers—avoids any HTML string bugs entirely
         st.subheader(f"📈 [MUTUAL FUND] {fund_name}")
-        st.caption(f"AMFI ID: {scheme_code}")
+        st.caption(f"AMFI ID: {scheme_code} | Target SIP: {fmt_inr(per_asset_sip_budget)}/mo")
         
         col_f1, col_f2, col_f3, col_f4 = st.columns(4)
         with col_f1:
@@ -201,7 +193,6 @@ if total_active_assets_count > 0:
             tranche_vol = st.slider("Harvest Volume Size (%)", min_value=10, max_value=100, value=int(default_vol), step=5, key=f"vol_mf_{scheme_code}")
             
         url_state_builder.append(f"MF:{scheme_code}:{inv_cap}:{buy_nav}:{tgt_yield}:{tranche_vol}")
-        st.markdown(f"<div class='sip-badge'>🎯 Recommended Monthly Entry: {fmt_inr(per_asset_sip_budget)} / month</div>", unsafe_allow_html=True)
 
         if inv_cap > 0 and buy_nav > 0:
             live_nav_tick = get_live_asset_price(scheme_code, is_stock=False)
@@ -260,8 +251,8 @@ if total_active_assets_count > 0:
             if ra["type"] == "STK" and ra["code"] == clean_ticker:
                 default_cap, default_buy, default_tgt, default_vol = ra["capital"], ra["buy_nav"], ra["target"], ra["vol"]
                 
-        st.subheader(f"⚡ [STOCK EXCHANGE] {clean_ticker}")
-        st.caption("Real-Time Exchange Data Stream Active")
+        st.subheader(f"⚡ [STOCK] {clean_ticker}")
+        st.caption(f"Real-Time Exchange Stream | Target SIP: {fmt_inr(per_asset_sip_budget)}/mo")
         
         col_s1, col_s2, col_s3, col_s4 = st.columns(4)
         with col_s1:
@@ -274,7 +265,6 @@ if total_active_assets_count > 0:
             tranche_vol = st.slider("Harvest Volume Size (%)", min_value=10, max_value=100, value=int(default_vol), step=5, key=f"vol_stk_{clean_ticker}")
             
         url_state_builder.append(f"STK:{clean_ticker}:{inv_cap}:{buy_nav}:{tgt_yield}:{tranche_vol}")
-        st.markdown(f"<div class='sip-badge' style='color:#ff9100; border-color:#ff9100;'>🎯 Recommended Monthly Budget Entry: {fmt_inr(per_asset_sip_budget)} / month</div>", unsafe_allow_html=True)
 
         if inv_cap > 0 and buy_nav > 0:
             live_stock_tick = get_live_asset_price(clean_ticker, is_stock=True)
@@ -344,4 +334,22 @@ if total_active_assets_count > 0:
         
         g1, g2, g3, g4 = st.columns(4)
         with g1:
-            st.markdown(f"<div class='card-container'><span cla
+            st.markdown(f"<div class='card-container'><span class='section-header'>Aggregate Staked Capital</span><h2 style='color:#ffffff; margin-top:5px;'>{fmt_inr(global_staked_capital)}</h2></div>", unsafe_allow_html=True)
+        with g2:
+            st.markdown(f"<div class='card-container'><span class='section-header'>Combined Market Valuation</span><h2 style='color:#00e5ff; margin-top:5px;'>{fmt_inr(global_current_market_value)}</h2></div>", unsafe_allow_html=True)
+            
+        m_class = "profit-positive" if master_profit >= 0 else "profit-negative"
+        m_sign = "+" if master_profit >= 0 else ""
+        
+        with g3:
+            st.markdown(f"<div class='card-container'><span class='section-header'>Consolidated Net Returns</span><h2 class='{m_class}'>{m_sign}{fmt_inr(master_profit)}</h2></div>", unsafe_allow_html=True)
+        with g4:
+            st.markdown(f"<div class='card-container'><span class='section-header'>Aggregate Portfolio Yield</span><h2 class='{m_class}'>{m_sign}{round(master_yield, 2)}%</h2><div class='badge-settlement'>🕒 Real-time Stocks Enabled</div></div>", unsafe_allow_html=True)
+
+        # Strategic Risk Shield Balance Indicator Bar Chart
+        st.markdown("### 🛡️ Defensive Core Shield Master Balance Bar")
+        total_integrated_wealth = global_current_market_value + fd_reserves
+        mkt_exposure_pct = float(global_current_market_value / total_integrated_wealth) if total_integrated_wealth > 0 else 0.0
+        mkt_exposure_pct = max(0.0, min(1.0, mkt_exposure_pct))
+        
+        st.markdown(f"<div style='background-color: #161b22; 
