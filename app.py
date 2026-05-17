@@ -8,26 +8,9 @@ import yfinance as yf
 # --- SYSTEM INITIALIZATION & THEME CORES ---
 st.set_page_config(page_title="P.A.S.E. Ultimate Command Center", page_icon="🛡️", layout="wide")
 
-# Premium Cyberpunk Institutional Trading Theme Configuration
-st.markdown("""
-    <style>
-    .main { background-color: #0d1117; color: #c9d1d9; }
-    div.stNumberInput > div > div > input { background-color: #161b22; color: #58a6ff; font-weight: bold; border: 1px solid #30363d; }
-    div.stSelectbox > div { background-color: #161b22; }
-    div.stSlider > div { background-color: #161b22; }
-    div.stTextInput > div > div > input { background-color: #161b22; color: #ffffff; border: 1px solid #30363d; }
-    .card-container { background-color: #161b22; border: 1px solid #30363d; padding: 22px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
-    .profit-positive { color: #39d353; font-weight: bold; font-size: 1.8rem; margin: 5px 0; }
-    .profit-negative { color: #f85149; font-weight: bold; font-size: 1.8rem; margin: 5px 0; }
-    .section-header { color: #8b949e; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-    .badge-settlement { background-color: #1b1f24; border: 1px solid #21262d; color: #8b949e; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; display: inline-block; margin-top: 5px; }
-    .chart-box { background-color: #161b22; border: 1px solid #30363d; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-    </style>
-    """, unsafe_allow_html=True)
-
 # Main Title Stack Header
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption("Psychological Assistant for Stock Exchange • Cross-Asset Multi-Engine v15.2")
+st.caption("Psychological Assistant for Stock Exchange • Cross-Asset Multi-Engine v15.3")
 st.markdown("---")
 
 # --- PATH A: AUTOMATED INDIAN CURRENCY FORMATTER MATRIX ---
@@ -178,9 +161,9 @@ if total_active_assets_count > 0:
             if ra["type"] == "MF" and ra["code"] == scheme_code:
                 default_cap, default_buy, default_tgt, default_vol = ra["capital"], ra["buy_nav"], ra["target"], ra["vol"]
                 
-        # Pure native Streamlit layout headers—avoids any HTML string bugs entirely
+        st.markdown("---")
         st.subheader(f"📈 [MUTUAL FUND] {fund_name}")
-        st.caption(f"AMFI ID: {scheme_code} | Target SIP: {fmt_inr(per_asset_sip_budget)}/mo")
+        st.caption(f"AMFI ID: {scheme_code} | Target Recommended SIP: {fmt_inr(per_asset_sip_budget)}/mo")
         
         col_f1, col_f2, col_f3, col_f4 = st.columns(4)
         with col_f1:
@@ -212,12 +195,11 @@ if total_active_assets_count > 0:
             
             cm1, cm2, cm3 = st.columns(3)
             with cm1:
-                st.markdown(f"<span class='metric-title'>Current Valuation</span><div class='metric-value' style='color:#00e5ff;'>{fmt_inr(current_valuation)}</div><caption style='font-size:0.75rem; color:#8b949e;'>Live NAV: ₹{live_nav_tick}</caption>", unsafe_allow_html=True)
+                st.metric("Current Valuation", fmt_inr(current_valuation), f"Live NAV: ₹{live_nav_tick}", delta_color="off")
             with cm2:
-                s_color = "#39d353" if net_p_l >= 0 else "#f85149"
-                st.markdown(f"<span class='metric-title'>Net Gains</span><div class='metric-value' style='color:{s_color};'>{'+' if net_p_l >= 0 else ''}{fmt_inr(net_p_l)}</div>", unsafe_allow_html=True)
+                st.metric("Net Gains", fmt_inr(net_p_l))
             with cm3:
-                st.markdown(f"<span class='metric-title'>Absolute Yield</span><div class='metric-value' style='color:{s_color};'>{'+' if net_p_l >= 0 else ''}{round(current_yield_rate, 2)}%</div>", unsafe_allow_html=True)
+                st.metric("Absolute Yield", f"{round(current_yield_rate, 2)}%")
 
             # System Execution Alerts
             if current_yield_rate <= -15.0:
@@ -237,7 +219,6 @@ if total_active_assets_count > 0:
                 st.success(f"🚨 STRATEGIC EXIT CEILING BREACHED • Redeem exactly {round(u_liquidate, 3)} units (~{fmt_inr(trim_cash)}) to lock in {tranche_vol}% of surplus profit.")
             else:
                 st.info(f"🔵 CORE ACCUMULATION STATUS SECURE • Tracking steady at {round(current_yield_rate, 2)}%. No tactical adjustments necessary.")
-        st.markdown("---")
 
     # -------------------------------------------------------------
     # PATH B PROCESSING PIPELINE: LIVE NSE/BSE STOCKS & ETFS GRID
@@ -251,8 +232,9 @@ if total_active_assets_count > 0:
             if ra["type"] == "STK" and ra["code"] == clean_ticker:
                 default_cap, default_buy, default_tgt, default_vol = ra["capital"], ra["buy_nav"], ra["target"], ra["vol"]
                 
+        st.markdown("---")
         st.subheader(f"⚡ [STOCK] {clean_ticker}")
-        st.caption(f"Real-Time Exchange Stream | Target SIP: {fmt_inr(per_asset_sip_budget)}/mo")
+        st.caption(f"Real-Time Exchange Stream | Target Recommended SIP: {fmt_inr(per_asset_sip_budget)}/mo")
         
         col_s1, col_s2, col_s3, col_s4 = st.columns(4)
         with col_s1:
@@ -284,12 +266,11 @@ if total_active_assets_count > 0:
             
             cm1, cm2, cm3 = st.columns(3)
             with cm1:
-                st.markdown(f"<span class='metric-title'>Current Valuation</span><div class='metric-value' style='color:#00e5ff;'>{fmt_inr(current_valuation)}</div><caption style='font-size:0.75rem; color:#8b949e;'>Live Market Price: ₹{live_stock_tick}</caption>", unsafe_allow_html=True)
+                st.metric("Current Valuation", fmt_inr(current_valuation), f"Live Market Price: ₹{live_stock_tick}", delta_color="off")
             with cm2:
-                s_color = "#39d353" if net_p_l >= 0 else "#f85149"
-                st.markdown(f"<span class='metric-title'>Net Gains</span><div class='metric-value' style='color:{s_color};'>{'+' if net_p_l >= 0 else ''}{fmt_inr(net_p_l)}</div>", unsafe_allow_html=True)
+                st.metric("Net Gains", fmt_inr(net_p_l))
             with cm3:
-                st.markdown(f"<span class='metric-title'>Absolute Yield</span><div class='metric-value' style='color:{s_color};'>{'+' if net_p_l >= 0 else ''}{round(current_yield_rate, 2)}%</div>", unsafe_allow_html=True)
+                st.metric("Absolute Yield", f"{round(current_yield_rate, 2)}%")
 
             # Stock Tactical Alerts Loop
             if current_yield_rate <= -15.0:
@@ -309,47 +290,75 @@ if total_active_assets_count > 0:
                 st.success(f"🚨 HIGH-VELOCITY HARVEST TARGET ACCESSED • Sell exactly {round(shares_to_liquidate, 3)} shares (~{fmt_inr(trim_cash)}) to lock in {tranche_vol}% of surplus gains.")
             else:
                 st.info(f"🔵 STOCK MATRIX HOLD STEADY • Ticker performance stands steady at {round(current_yield_rate, 2)}%. Maintain long positions.")
-        st.markdown("---")
 
     # -------------------------------------------------------------
     # DISPLAY VISUAL CHARTS DECK
     # -------------------------------------------------------------
     if yield_chart_data or composition_chart_data:
-        st.markdown("### 📊 Live Analytics Performance Dashboard")
+        st.markdown("---")
+        st.subheader("📊 Live Analytics Performance Dashboard")
         col_ch1, col_ch2 = st.columns(2)
         with col_ch1:
-            st.markdown("##### 📈 Cross-Asset Absolute Yield Radar (%)")
+            st.markdown("**📈 Cross-Asset Absolute Yield Radar (%)**")
             df_yields = pd.DataFrame(list(yield_chart_data.items()), columns=["Asset Label", "Yield (%)"]).set_index("Asset Label")
             st.bar_chart(df_yields, height=220)
         with col_ch2:
-            st.markdown("##### 💎 Integrated Capital Scale Distribution (₹)")
+            st.markdown("**💎 Integrated Capital Scale Distribution (₹)**")
             df_comp = pd.DataFrame(list(composition_chart_data.items()), columns=["Asset Label", "Current Valuation (₹)"]).set_index("Asset Label")
             st.bar_chart(df_comp, height=220)
 
     # --- COMPUTE COMPREHENSIVE OVERVIEW PROFILE DASHBOARDS ---
     if global_staked_capital > 0:
-        st.markdown("### 📊 Consolidated Master Overview")
+        st.markdown("---")
+        st.subheader("📊 Consolidated Master Overview")
         master_profit = global_current_market_value - global_staked_capital
         master_yield = (master_profit / global_staked_capital) * 100
         
         g1, g2, g3, g4 = st.columns(4)
         with g1:
-            st.markdown(f"<div class='card-container'><span class='section-header'>Aggregate Staked Capital</span><h2 style='color:#ffffff; margin-top:5px;'>{fmt_inr(global_staked_capital)}</h2></div>", unsafe_allow_html=True)
+            st.metric("Aggregate Staked Capital", fmt_inr(global_staked_capital))
         with g2:
-            st.markdown(f"<div class='card-container'><span class='section-header'>Combined Market Valuation</span><h2 style='color:#00e5ff; margin-top:5px;'>{fmt_inr(global_current_market_value)}</h2></div>", unsafe_allow_html=True)
-            
-        m_class = "profit-positive" if master_profit >= 0 else "profit-negative"
-        m_sign = "+" if master_profit >= 0 else ""
-        
+            st.metric("Combined Market Valuation", fmt_inr(global_current_market_value))
         with g3:
-            st.markdown(f"<div class='card-container'><span class='section-header'>Consolidated Net Returns</span><h2 class='{m_class}'>{m_sign}{fmt_inr(master_profit)}</h2></div>", unsafe_allow_html=True)
+            st.metric("Consolidated Net Returns", fmt_inr(master_profit))
         with g4:
-            st.markdown(f"<div class='card-container'><span class='section-header'>Aggregate Portfolio Yield</span><h2 class='{m_class}'>{m_sign}{round(master_yield, 2)}%</h2><div class='badge-settlement'>🕒 Real-time Stocks Enabled</div></div>", unsafe_allow_html=True)
+            st.metric("Aggregate Portfolio Yield", f"{round(master_yield, 2)}%", "🕒 Real-time Cross-Asset Feed Active")
 
         # Strategic Risk Shield Balance Indicator Bar Chart
-        st.markdown("### 🛡️ Defensive Core Shield Master Balance Bar")
+        st.markdown("---")
+        st.subheader("🛡️ Defensive Core Shield Master Balance Bar")
         total_integrated_wealth = global_current_market_value + fd_reserves
         mkt_exposure_pct = float(global_current_market_value / total_integrated_wealth) if total_integrated_wealth > 0 else 0.0
         mkt_exposure_pct = max(0.0, min(1.0, mkt_exposure_pct))
         
-        st.markdown(f"<div style='background-color: #161b22; 
+        st.caption(f"📈 Combined Market Risk Exposure: {round(mkt_exposure_pct * 100, 1)}% | 🛡️ Cash Security Layer: {round((1 - mkt_exposure_pct) * 100, 1)}% (Includes {fmt_inr(total_harvested_surplus_pool)} harvested gains)")
+        st.progress(mkt_exposure_pct)
+        st.info(f"TOTAL INTEGRATED WEALTH POOL VALUE: {fmt_inr(total_integrated_wealth)}")
+
+        # --- BACKGROUND AUTOMATED STATE SYNC ENGINE ---
+        raw_state_string = "|".join(url_state_builder)
+        st.query_params.update(inc=income, sip=sip_pct, shd=fd_reserves, state=raw_state_string)
+
+else:
+    st.markdown("---")
+    st.info("### 📊 Terminal Workspace Active Idle Matrix\n\nOpen up the left control menu (`»`). Choose an asset class and deploy tracking containers to start your dashboard pipelines.")
+
+# --- PERSISTENT PREDICTIVE FORWARD PLANNER ---
+st.markdown("---")
+st.subheader("🎯 Predictive Compound Horizon Playground")
+col_s1, col_s2, col_s3 = st.columns(3)
+with col_s1:
+    target_goal = st.number_input("Target Corpus Goal (₹)", min_value=10000, value=500000, step=50000)
+with col_s2:
+    horizon_years = st.slider("Time Horizon Grid (Years)", min_value=1, max_value=30, value=5, step=1)
+with col_s3:
+    expected_return = st.slider("Expected Compounding Rate (CAGR %)", min_value=8, max_value=25, value=12, step=1)
+
+r = (expected_return / 12) / 100
+n = horizon_years * 12
+required_monthly_sip = target_goal / (((1 + r)**n - 1) / r * (1 + r))
+
+st.success(f"REQUIRED SIP INSTALLMENT RADAR TO HIT TARGET: {fmt_inr(required_monthly_sip)} / month (Compounding over {horizon_years} years at a baseline of {expected_return}%)")
+st.markdown("---")
+st.caption(f"P.A.S.E Pro Terminal Network Active | Universal Engine Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
+            
