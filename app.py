@@ -58,13 +58,9 @@ def save_credential_vault(data):
 def make_secure_hash(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
-# --- SECURITY SYSTEM LAYER CORE REWRITE ---
+# --- SECURITY SYSTEM LAYER CORE ---
 vault_db = load_credential_vault()
-
-# Initialize Cookie Manager natively without caching to resolve widget creation constraint exceptions
 cookie_manager = stx.CookieManager()
-
-# Check browser cookies for active unexpired sessions
 cookie_user = cookie_manager.get(cookie="pase_auth_user")
 
 if cookie_user and cookie_user in vault_db:
@@ -74,7 +70,7 @@ else:
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
 
-# 🔒 DARK-THEMED SECURITY GATE INTERFACE
+# 🔒 SECURITY ACCESS GATE
 if not st.session_state.authenticated:
     st.title("🔒 P.A.S.E. Security Checkpoint")
     st.caption("Psychological Assistant for Stock Exchange • Persistent Gateway Engine")
@@ -90,7 +86,6 @@ if not st.session_state.authenticated:
             if login_user in vault_db and vault_db[login_user] == make_secure_hash(login_pass):
                 st.session_state.authenticated = True
                 st.session_state.auth_user = login_user
-                # Drop tracking cookie into user's browser valid for 7 days
                 cookie_manager.set("pase_auth_user", login_user, expires_at=dt.datetime.now() + dt.timedelta(days=7))
                 st.rerun()
             else:
@@ -117,20 +112,17 @@ if not st.session_state.authenticated:
     st.stop()
 
 # -------------------------------------------------------------
-# 🛡️ AUTHENTICATED WORKSPACE DECK (RENDERS ONLY AFTER LOGIN)
+# 🛡️ AUTHENTICATED WORKSPACE DECK
 # -------------------------------------------------------------
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Persistent Suite v17.1")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Persistent Suite v17.2")
 
-# Session Modification Row
 auth_col1, auth_col2, _ = st.columns([1.5, 1.5, 5])
-
 with auth_col1:
     if st.button("🧹 Flush Workspace Inputs", use_container_width=True):
         st.query_params.clear()
         st.toast("Workspace inputs reset to clean state!", icon="🧹")
         st.rerun()
-
 with auth_col2:
     if st.button("🔒 Terminate Session", use_container_width=True):
         st.session_state.authenticated = False
@@ -173,7 +165,6 @@ GLOBAL_AMFI_DB = load_global_amfi_directory()
 
 # --- RECOVER ROUTED URL STATE PARAMETERS ---
 query_params = st.query_params
-
 init_income = int(query_params.get("inc", 50000)) if "inc" in query_params else 50000
 init_sip_pct = int(query_params.get("sip", 15)) if "sip" in query_params else 15
 init_shield = float(query_params.get("shd", 25000.0)) if "shd" in query_params else 25000.0
@@ -195,8 +186,6 @@ if "state" in query_params:
 # --- SIDEBAR COMMAND MODULE CONTROL STATION ---
 with st.sidebar:
     st.header("⚙️ TERMINAL COMMAND DECK")
-    st.caption("Adjustments sync dynamically into your browser address bar.")
-    
     income = st.number_input("Monthly Income (₹)", min_value=0, value=init_income, step=5000)
     sip_pct = st.slider("Target Allocation Pace (%)", min_value=5, max_value=50, value=init_sip_pct, step=5)
     fd_reserves = st.number_input("Core Shield Cash (FD/Savings) (₹)", min_value=0.0, value=init_shield, step=1000.0)
@@ -206,7 +195,6 @@ with st.sidebar:
     
     selected_search_assets = []
     stock_tickers_list = []
-    
     saved_mf_names = []
     saved_stock_tickers = [ra["code"] for ra in recovered_assets if ra["type"] == "STK"]
     
@@ -222,7 +210,6 @@ with st.sidebar:
         filtered_options = []
         if len(search_query) >= 3 and GLOBAL_AMFI_DB:
             filtered_options = [name for name in GLOBAL_AMFI_DB.keys() if search_query.lower() in name.lower()][:20]
-        
         all_mf_options = list(set(filtered_options + saved_mf_names))
         selected_search_assets = st.multiselect("Deploy Funds into workspace:", options=all_mf_options, default=saved_mf_names)
         stock_tickers_list = saved_stock_tickers
@@ -248,7 +235,7 @@ recommended_sip = (income * sip_pct) / 100
 per_asset_sip_budget = recommended_sip / max(total_active_assets_count, 1)
 
 # -------------------------------------------------------------
-# RUN COMPUTATION LOOPS & UI DISPLAY METRICS
+# CORE WORKSPACE GRID RENDERING
 # -------------------------------------------------------------
 if total_active_assets_count > 0:
     st.info(f"💡 **Target Strategy Vector:** Active setup tracking a total investment target pace of **{fmt_inr(recommended_sip)} / month**.")
@@ -323,6 +310,7 @@ if total_active_assets_count > 0:
                 st.success(f"🚨 STRATEGIC EXIT CEILING BREACHED • Redeem exactly {round(u_liquidate, 3)} units (~{fmt_inr(trim_cash)}) to lock in {tranche_vol}% of surplus profit.")
             else:
                 st.info(f"🔵 CORE ACCUMULATION STATUS SECURE • Tracking steady at {round(current_yield_rate, 2)}%. No tactical adjustments necessary.")
+        st.markdown("---")
 
     # Process Live Stocks Block
     for ticker_sym in stock_tickers_list:
@@ -391,10 +379,10 @@ if total_active_assets_count > 0:
                 st.success(f"🚨 HIGH-VELOCITY HARVEST TARGET ACCESSED • Sell exactly {round(shares_to_liquidate, 3)} shares (~{fmt_inr(trim_cash)}) to lock in {tranche_vol}% of surplus gains.")
             else:
                 st.info(f"🔵 STOCK MATRIX HOLD STEADY • Ticker performance stands steady at {round(current_yield_rate, 2)}%. Maintain long positions.")
+        st.markdown("---")
 
     # Render Visual Analytics Dashboard Graphs
     if yield_chart_data or composition_chart_data:
-        st.markdown("---")
         st.subheader("📊 Live Analytics Performance Dashboard")
         col_ch1, col_ch2 = st.columns(2)
         with col_ch1:
@@ -408,7 +396,6 @@ if total_active_assets_count > 0:
 
     # Render Consolidated Overview Profile Dashboards
     if global_staked_capital > 0:
-        st.markdown("---")
         st.subheader("📊 Consolidated Master Overview")
         master_profit = global_current_market_value - global_staked_capital
         master_yield = (master_profit / global_staked_capital) * 100
@@ -416,4 +403,12 @@ if total_active_assets_count > 0:
         g1, g2, g3, g4 = st.columns(4)
         with g1:
             st.metric("Aggregate Staked Capital", fmt_inr(global_staked_capital))
-      
+        with g2:
+            st.metric("Combined Market Valuation", fmt_inr(global_current_market_value))
+        with g3:
+            st.metric("Consolidated Net Returns", fmt_inr(master_profit))
+        with g4:
+            st.metric("Aggregate Portfolio Yield", f"{round(master_yield, 2)}%", "🕒 Persistent Active Session Token Linked")
+
+        # Render Strategic Balance Indicator Bar Chart
+        st.subheader("🛡️ Defensiv
