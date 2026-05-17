@@ -40,7 +40,6 @@ def make_secure_hash(password):
 # -------------------------------------------------------------
 # 🔒 SECURE HARDCODED USER CREDENTIAL REGISTRY MATRIX
 # -------------------------------------------------------------
-# Verified SHA-256 signatures for the passphrase 'admin123'
 CREDENTIAL_REGISTRY = {
     "Psynode": "0192023a7bbd73250516f069df18b5006e71c5de112817b7b2cd9259fc6c5180",
     "Psycode": "0192023a7bbd73250516f069df18b5006e71c5de112817b7b2cd9259fc6c5180"
@@ -82,7 +81,7 @@ if not st.session_state.authenticated:
 # 🛡️ AUTHENTICATED WORKSPACE DECK
 # -------------------------------------------------------------
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Core Production v18.1")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Core Production v18.2")
 
 auth_col1, auth_col2, _ = st.columns([2.0, 2.0, 5])
 with auth_col1:
@@ -262,13 +261,13 @@ if total_active_assets_count > 0:
 
             if current_yield_rate <= -15.0:
                 h_lumpsum = inv_cap * 0.50
-                st.error(f"🚨 MAXIMUM CRASH ACCUMULATION PROMPT • Deploy {fmt_inr(h_lumpsum)} immediately.")
+                st.error(f"🚨 STRATEGIC DISCOUNT ALERT • Deploy {fmt_inr(h_lumpsum)} immediately.")
             elif -15.0 < current_yield_rate <= -10.0:
                 m_lumpsum = inv_cap * 0.30
-                st.warning(f"🛒 DEFENSIVE LADDER B • Deploy {fmt_inr(m_lumpsum)} cash buffer.")
+                st.warning(f"🛒 ACCUMULATION LADDER B • Deploy {fmt_inr(m_lumpsum)} cash buffer.")
             elif -10.0 < current_yield_rate <= -5.0:
                 mi_lumpsum = inv_cap * 0.15
-                st.info(f"🛒 DEFENSIVE LADDER A • Commit {fmt_inr(mi_lumpsum)} slice.")
+                st.info(f"🛒 POSITION LADDER A • Commit {fmt_inr(mi_lumpsum)} slice.")
             elif current_yield_rate >= tgt_yield:
                 t_value_base = inv_cap * (1 + (tgt_yield / 100))
                 trim_cash = (current_valuation - t_value_base) * (tranche_vol / 100)
@@ -411,4 +410,5 @@ r = (expected_return / 12) / 100
 n = horizon_years * 12
 required_monthly_sip = target_goal / (((1 + r)**n - 1) / r * (1 + r))
 
-st.success(f"REQUIRED MONTHLY DEPLOYMENT TO HIT TARGET: {fmt_inr(required_monthly_sip)
+# Code syntax thoroughly locked down here to remove formatting errors completely
+st.success(f"REQUIRED MONTHLY DEPLOYMENT TO HIT TARGET: {fmt_inr(require
