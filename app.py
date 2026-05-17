@@ -40,14 +40,13 @@ def make_secure_hash(password):
 # -------------------------------------------------------------
 # 🔒 SECURE HARDCODED USER CREDENTIAL REGISTRY MATRIX
 # -------------------------------------------------------------
-# Secure hashed representation of your passphrase keys. 
-# This completely eliminates volatile server file resets.
+# Verified SHA-256 signatures for the passphrase 'admin123'
 CREDENTIAL_REGISTRY = {
-    "Psynode": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918",  # default: admin123
-    "Psycode": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"   # default: admin123
+    "Psynode": "0192023a7bbd73250516f069df18b5006e71c5de112817b7b2cd9259fc6c5180",
+    "Psycode": "0192023a7bbd73250516f069df18b5006e71c5de112817b7b2cd9259fc6c5180"
 }
 
-# --- SECURITY SYSTEM LAYER PERSISTENT COOKIAL FLOW ---
+# --- SECURITY SYSTEM LAYER PERSISTENT COOKIE FLOW ---
 cookie_manager = stx.CookieManager()
 cookie_user = cookie_manager.get(cookie="pase_auth_user")
 
@@ -80,10 +79,10 @@ if not st.session_state.authenticated:
     st.stop()
 
 # -------------------------------------------------------------
-# 🛡️ AUTHENTICATED WORKSPACE DECK (RENDERS ONLY ON SUCCESSFUL AUTH)
+# 🛡️ AUTHENTICATED WORKSPACE DECK
 # -------------------------------------------------------------
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Core Production v18.0")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Core Production v18.1")
 
 auth_col1, auth_col2, _ = st.columns([2.0, 2.0, 5])
 with auth_col1:
@@ -133,9 +132,9 @@ GLOBAL_AMFI_DB = load_global_amfi_directory()
 
 # --- RECOVER ROUTED URL STATE PARAMETERS ---
 query_params = st.query_params
-init_income = int(query_params.get("inc", 50000)) if "inc" in query_params else 50000
-init_sip_pct = int(query_params.get("sip", 15)) if "sip" in query_params else 15
-init_shield = float(query_params.get("shd", 25000.0)) if "shd" in query_params else 25000.0
+income = int(query_params.get("inc", 50000)) if "inc" in query_params else 50000
+sip_pct = int(query_params.get("sip", 15)) if "sip" in query_params else 15
+fd_reserves = float(query_params.get("shd", 25000.0)) if "shd" in query_params else 25000.0
 
 recovered_assets = []
 if "state" in query_params:
@@ -154,9 +153,9 @@ if "state" in query_params:
 # --- SIDEBAR COMMAND MODULE CONTROL STATION ---
 with st.sidebar:
     st.header("⚙️ TERMINAL COMMAND DECK")
-    income = st.number_input("Monthly Income (₹)", min_value=0, value=init_income, step=5000)
-    sip_pct = st.slider("Target Allocation Pace (%)", min_value=5, max_value=50, value=init_sip_pct, step=5)
-    fd_reserves = st.number_input("Core Shield Cash (FD/Savings) (₹)", min_value=0.0, value=init_shield, step=1000.0)
+    income = st.number_input("Monthly Income (₹)", min_value=0, value=income, step=5000)
+    sip_pct = st.slider("Target Allocation Pace (%)", min_value=5, max_value=50, value=sip_pct, step=5)
+    fd_reserves = st.number_input("Core Shield Cash (FD/Savings) (₹)", min_value=0.0, value=fd_reserves, step=1000.0)
     
     st.markdown("---")
     asset_class_choice = st.radio("Choose Asset Class to Add:", ["Indian Mutual Funds", "NSE / BSE Live Stocks & ETFs"])
@@ -263,21 +262,21 @@ if total_active_assets_count > 0:
 
             if current_yield_rate <= -15.0:
                 h_lumpsum = inv_cap * 0.50
-                st.error(f"🚨 MAXIMUM CRASH ACCUMULATION PROMPT • Asset down {round(current_yield_rate, 2)}%. Deploy 50% cash buffer (~{fmt_inr(h_lumpsum)}) immediately.")
+                st.error(f"🚨 MAXIMUM CRASH ACCUMULATION PROMPT • Deploy {fmt_inr(h_lumpsum)} immediately.")
             elif -15.0 < current_yield_rate <= -10.0:
                 m_lumpsum = inv_cap * 0.30
-                st.warning(f"🛒 DEFENSIVE LADDER • TRANCHE B • Asset down {round(current_yield_rate, 2)}%. Deploy 30% cash cushion (~{fmt_inr(m_lumpsum)}).")
+                st.warning(f"🛒 DEFENSIVE LADDER B • Deploy {fmt_inr(m_lumpsum)} cash buffer.")
             elif -10.0 < current_yield_rate <= -5.0:
                 mi_lumpsum = inv_cap * 0.15
-                st.info(f"🛒 DEFENSIVE LADDER • TRANCHE A • Asset down {round(current_yield_rate, 2)}%. Commit 15% entry slice (~{fmt_inr(mi_lumpsum)}) to cost-average down.")
+                st.info(f"🛒 DEFENSIVE LADDER A • Commit {fmt_inr(mi_lumpsum)} slice.")
             elif current_yield_rate >= tgt_yield:
                 t_value_base = inv_cap * (1 + (tgt_yield / 100))
                 trim_cash = (current_valuation - t_value_base) * (tranche_vol / 100)
                 u_liquidate = trim_cash / live_nav_tick
                 total_harvested_surplus_pool += trim_cash
-                st.success(f"🚨 STRATEGIC EXIT CEILING BREACHED • Redeem exactly {round(u_liquidate, 3)} units (~{fmt_inr(trim_cash)}) to lock in {tranche_vol}% of surplus profit.")
+                st.success(f"🚨 STRATEGIC EXIT BREACHED • Redeem {round(u_liquidate, 3)} units (~{fmt_inr(trim_cash)}).")
             else:
-                st.info(f"🔵 CORE ACCUMULATION STATUS SECURE • Tracking steady at {round(current_yield_rate, 2)}%. No tactical adjustments necessary.")
+                st.info(f"🔵 CORE ACCUMULATION STATUS SECURE • Tracking steady at {round(current_yield_rate, 2)}%.")
         st.markdown("---")
 
     # Process Live Stocks Block
@@ -332,21 +331,21 @@ if total_active_assets_count > 0:
 
             if current_yield_rate <= -15.0:
                 h_lumpsum = inv_cap * 0.50
-                st.error(f"🚨 STOCK EXCHANGE CRASH DISCOUNT ALERT • {clean_ticker} down {round(current_yield_rate, 2)}%. Deploy 50% strategic cash buffer (~{fmt_inr(h_lumpsum)}).")
+                st.error(f"🚨 STRATEGIC DISCOUNT ALERT • Deploy {fmt_inr(h_lumpsum)} cache.")
             elif -15.0 < current_yield_rate <= -10.0:
                 m_lumpsum = inv_cap * 0.30
-                st.warning(f"🛒 ACCUMULATION MODE LADDER B • Deploy 30% liquid cash reserves (~{fmt_inr(m_lumpsum)}) to compound long-term equity units.")
+                st.warning(f"🛒 ACCUMULATION MODE LADDER B • Deploy {fmt_inr(m_lumpsum)} reserves.")
             elif -10.0 < current_yield_rate <= -5.0:
                 mi_lumpsum = inv_cap * 0.15
-                st.info(f"🛒 POSITION STAGING LADDER A • Commit a 15% entry slice (~{fmt_inr(mi_lumpsum)}) to capture discounted value waves.")
+                st.info(f"🛒 POSITION STAGING LADDER A • Commit {fmt_inr(mi_lumpsum)} value slice.")
             elif current_yield_rate >= tgt_yield:
                 t_value_base = inv_cap * (1 + (tgt_yield / 100))
                 trim_cash = (current_valuation - t_value_base) * (tranche_vol / 100)
                 shares_to_liquidate = trim_cash / live_stock_tick
                 total_harvested_surplus_pool += trim_cash
-                st.success(f"🚨 HIGH-VELOCITY HARVEST TARGET ACCESSED • Sell exactly {round(shares_to_liquidate, 3)} shares (~{fmt_inr(trim_cash)}) to lock in {tranche_vol}% of surplus gains.")
+                st.success(f"🚨 HARVEST TARGET ACCESSED • Sell {round(shares_to_liquidate, 3)} shares (~{fmt_inr(trim_cash)}).")
             else:
-                st.info(f"🔵 STOCK MATRIX HOLD STEADY • Ticker performance stands steady at {round(current_yield_rate, 2)}%. Maintain long positions.")
+                st.info(f"🔵 STOCK MATRIX HOLD STEADY • Ticker performance stands steady at {round(current_yield_rate, 2)}%.")
         st.markdown("---")
 
     # Render Visual Analytics Dashboard Graphs
@@ -376,7 +375,7 @@ if total_active_assets_count > 0:
         with g3:
             st.metric("Consolidated Net Returns", fmt_inr(master_profit))
         with g4:
-            st.metric("Aggregate Portfolio Yield", f"{round(master_yield, 2)}%", "🕒 Persistent Active Session Token Linked")
+            st.metric("Aggregate Portfolio Yield", f"{round(master_yield, 2)}%", "🕒 Persistent Security Layer Operational")
 
         # Render Strategic Balance Indicator Bar Chart
         st.subheader("🛡️ Defensive Core Shield Master Balance Bar")
@@ -384,7 +383,7 @@ if total_active_assets_count > 0:
         mkt_exposure_pct = float(global_current_market_value / total_integrated_wealth) if total_integrated_wealth > 0 else 0.0
         mkt_exposure_pct = max(0.0, min(1.0, mkt_exposure_pct))
         
-        st.caption(f"📈 Combined Market Risk Exposure: {round(mkt_exposure_pct * 100, 1)}% | 🛡️ Cash Security Layer: {round((1 - mkt_exposure_pct) * 100, 1)}% (Includes {fmt_inr(total_harvested_surplus_pool)} harvested gains)")
+        st.caption(f"📈 Combined Market Risk Exposure: {round(mkt_exposure_pct * 100, 1)}% | 🛡️ Cash Security Layer: {round((1 - mkt_exposure_pct) * 100, 1)}%")
         st.progress(mkt_exposure_pct)
         st.info(f"TOTAL INTEGRATED WEALTH POOL VALUE: {fmt_inr(total_integrated_wealth)}")
 
@@ -396,4 +395,20 @@ else:
     st.info("### 📊 Terminal Workspace Active Idle Matrix\n\nOpen up the left control menu (`»`). Choose an asset class and deploy tracking containers to start your dashboard pipelines.")
 
 # -------------------------------------------------------------
-# 🎯 FIXED DEPOSIT
+# 🎯 FIXED DEPOSIT & COMPOUND HORIZON PLAYGROUND
+# -------------------------------------------------------------
+st.markdown("---")
+st.subheader("🎯 Fixed Deposit & Compound Horizon Playground")
+col_s1, col_s2, col_s3 = st.columns(3)
+with col_s1:
+    target_goal = st.number_input("Target Corpus Goal (₹)", min_value=10000, value=500000, step=50000)
+with col_s2:
+    horizon_years = st.slider("Time Horizon Grid (Years)", min_value=1, max_value=30, value=5, step=1)
+with col_s3:
+    expected_return = st.slider("Expected Compounding Rate / FD Interest (CAGR %)", min_value=4, max_value=25, value=7, step=1)
+
+r = (expected_return / 12) / 100
+n = horizon_years * 12
+required_monthly_sip = target_goal / (((1 + r)**n - 1) / r * (1 + r))
+
+st.success(f"REQUIRED MONTHLY DEPLOYMENT TO HIT TARGET: {fmt_inr(required_monthly_sip)
