@@ -125,7 +125,7 @@ if not st.session_state.authenticated:
 # 🛡️ AUTHENTICATED WORKSPACE DECK
 # -------------------------------------------------------------
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Suite Core v21.0")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Suite Core v22.0")
 
 auth_col1, auth_col2, _ = st.columns([2.0, 2.0, 5])
 with auth_col1:
@@ -420,7 +420,9 @@ if total_active_assets_count > 0:
         with g4:
             st.metric("Aggregate Portfolio Yield", f"{round(master_yield, 2)}%", "🛡️ Active User Registry Node Active")
 
-        # Render Strategic Balance Indicator Bar Chart (SAFE PLACEMENT INDEPENDENT OF MATH SCOPE LOGIC)
+        # --- SAFE AND SEGREGATED PROGRESS DISPLAY LOGIC AREA ---
         st.subheader("🛡️ Defensive Core Shield Master Balance Bar")
         total_integrated_wealth = global_current_market_value + fd_reserves
-        mkt_exposure_pct = float(global_cu
+        
+        if total_integrated_wealth > 0.0:
+            mkt_exposure_pct 
