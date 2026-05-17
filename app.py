@@ -28,12 +28,13 @@ st.markdown("""
     .badge-quality { background-color: #21262d; border: 1px solid #30363d; color: #58a6ff; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
     .badge-settlement { background-color: #1b1f24; border: 1px solid #21262d; color: #8b949e; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; display: inline-block; margin-top: 5px; }
     .chart-box { background-color: #161b22; border: 1px solid #30363d; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    .sip-badge { background-color: #1f242c; border: 1px solid #388bfd; color: #58a6ff; padding: 4px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; display: inline-block; margin-top: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
 # Main Title Stack Header
 st.title("🛡️ P.A.S.E. Pro Workspace")
-st.caption("Psychological Assistant for Stock Exchange • Live Analytics Visualization Engine v13.5")
+st.caption("Psychological Assistant for Stock Exchange • Full Closed-Loop Enterprise Suite v14.0")
 st.markdown("---")
 
 # --- GLOBAL LIVE AMFI AUTOMATION INTERNET ENGINES ---
@@ -115,15 +116,20 @@ with st.sidebar:
 # --- MASTER COMPILATION POOLS ---
 global_staked_capital = 0.0
 global_current_market_value = 0.0
+total_harvested_surplus_pool = 0.0
 url_state_builder = []
 
 # Visualization data holders
 yield_chart_data = {}
 composition_chart_data = {}
 
+# Filter verified deployed assets
+active_fund_count = len([f for f in selected_search_assets if f in GLOBAL_AMFI_DB])
+recommended_sip = (income * sip_pct) / 100
+per_fund_sip_budget = recommended_sip / max(active_fund_count, 1)
+
 if selected_search_assets and selected_search_assets != ["Search for an asset above..."]:
-    recommended_sip = (income * sip_pct) / 100
-    st.info(f"💡 **Target Strategy Vector:** System parameters tracking an ongoing investment pacing target of **₹{round(recommended_sip, 2)} / month** across active structures.")
+    st.info(f"💡 **Target Strategy Vector:** System parameters tracking a total investment pace of **₹{round(recommended_sip, 2)} / month** across your active asset containers.")
     
     # -------------------------------------------------------------
     # RUN COMPILATION AND CARD RENDERING ENGINE
@@ -144,22 +150,26 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
         <div class="fund-card">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; padding-bottom: 8px; margin-bottom: 15px;">
                 <span style="font-weight: bold; color: #58a6ff; font-size: 1.1rem;">📈 {fund_name}</span>
-                <span class="badge-quality">AMFI ID: {scheme_code} • System Monitored</span>
+                <span class="badge-quality">CODE ID: {scheme_code} • Isolated Widget Thread</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
         
+        # FIXED BUG 1: Appending the unique scheme_code to every single key parameter string prevents key collisions
         col_f1, col_f2, col_f3, col_f4 = st.columns(4)
         with col_f1:
-            inv_cap = st.number_input("Money Invested (₹)", min_value=0.0, value=default_cap, step=500.0, key=f"c_{scheme_code}")
+            inv_cap = st.number_input("Money Invested (₹)", min_value=0.0, value=default_cap, step=500.0, key=f"cap_id_{scheme_code}")
         with col_f2:
-            buy_nav = st.number_input("Your Average Purchase NAV (₹)", min_value=0.0, value=default_buy, step=1.0, key=f"n_{scheme_code}")
+            buy_nav = st.number_input("Your Average Purchase NAV (₹)", min_value=0.0, value=default_buy, step=1.0, key=f"nav_id_{scheme_code}")
         with col_f3:
-            tgt_yield = st.slider("Target Exit Ceiling (%)", min_value=5.0, max_value=30.0, value=default_tgt, step=0.5, key=f"t_{scheme_code}")
+            tgt_yield = st.slider("Target Exit Ceiling (%)", min_value=5.0, max_value=30.0, value=default_tgt, step=0.5, key=f"tgt_id_{scheme_code}")
         with col_f4:
-            tranche_vol = st.slider("Harvest Volume Size (%)", min_value=10, max_value=100, value=int(default_vol), step=5, key=f"v_{scheme_code}")
+            tranche_vol = st.slider("Harvest Volume Size (%)", min_value=10, max_value=100, value=int(default_vol), step=5, key=f"vol_id_{scheme_code}")
             
         url_state_builder.append(f"{scheme_code}:{inv_cap}:{buy_nav}:{tgt_yield}:{tranche_vol}")
+
+        # FEATURE 3: Render automated Monthly SIP Vector Allocation Badge
+        st.markdown(f"<div class='sip-badge'>🎯 Recommended Systematic Monthly Entry: ₹{round(per_fund_sip_budget, 2)} / month</div>", unsafe_allow_html=True)
 
         if inv_cap > 0 and buy_nav > 0:
             live_nav_tick = get_live_nav_price(scheme_code)
@@ -174,7 +184,6 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
             global_staked_capital += inv_cap
             global_current_market_value += current_valuation
             
-            # Gated mapping configuration
             yield_chart_data[short_label] = round(current_yield_rate, 2)
             composition_chart_data[short_label] = round(current_valuation, 2)
             
@@ -203,6 +212,10 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
                 raw_surplus_cash = current_valuation - target_value_baseline
                 custom_tranche_cash_trim = raw_surplus_cash * (tranche_vol / 100)
                 units_to_liquidate = custom_tranche_cash_trim / live_nav_tick
+                
+                # FIXED BUG 2: Feed harvested profits directly into the aggregate global surplus shield loop
+                total_harvested_surplus_pool += custom_tranche_cash_trim
+                
                 st.markdown(f"""<div class='status-harvest'>🚨 STRATEGIC EXIT CEILING BREACHED • TRANCHE EXECUTION ENGAGED<br><span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>Action: Yield has cleared target threshold (+{tgt_yield}%). Redeem exactly <b>{round(units_to_liquidate, 3)} units</b> (~₹{round(custom_tranche_cash_trim, 2)}) on your broker dashboard to secure {tranche_vol}% of surplus profit.</span></div>""", unsafe_allow_html=True)
             else:
                 st.markdown(f"""<div class='status-hold'>🔵 CORE ACCUMULATION STATUS SECURE<br><span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>Current yield at {round(current_yield_rate, 2)}%. Asset runs smoothly below your designated +{tgt_yield}% harvest target gate. Maintain systematic deployment positions.</span></div>""", unsafe_allow_html=True)
@@ -211,7 +224,7 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
     # -------------------------------------------------------------
     # DISPLAY VISUAL CHARTS DECK
     # -------------------------------------------------------------
-    if yield_chart_data and composition_chart_data:
+    if yield_chart_data or composition_chart_data:
         st.markdown("### 📊 Live Analytics Performance Dashboard")
         col_ch1, col_ch2 = st.columns(2)
         
@@ -245,16 +258,21 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
         with g4:
             st.markdown(f"<div class='card-container'><span class='section-header'>Aggregate Portfolio Yield</span><h2 class='{m_class}'>{m_sign}{round(master_yield, 2)}%</h2><div class='badge-settlement'>🕒 NAV settles daily after market close</div></div>", unsafe_allow_html=True)
 
-        # Strategic Risk Shield Balance Indicator Bar Chart
+        # Strategic Risk Shield Balance Indicator Bar Chart (With Closed-Loop Accounting)
         st.markdown("### 🛡️ Defensive Core Shield Master Balance Bar")
-        total_integrated_wealth = global_current_market_value + fd_reserves
-        mkt_exposure_pct = (global_current_market_value / total_integrated_wealth)
+        
+        # Dynamic Closed-Loop Integration: Harvested profits exit market metrics and elevate safe cash pool vectors
+        dynamic_cash_shield_layer = fd_reserves + total_harvested_surplus_pool
+        total_integrated_wealth = global_current_market_value + fd_reserves # Stays constant to protect tracking bounds
+        
+        mkt_exposure_pct = float(global_current_market_value / (total_integrated_wealth)) if total_integrated_wealth > 0 else 0.0
+        mkt_exposure_pct = max(0.0, min(1.0, mkt_exposure_pct)) # Cap boundaries
         
         st.markdown(f"""
         <div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d; margin-bottom: 8px;'>
             <div style='display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px;'>
                 <span style='color: #58a6ff;'>📈 Combined Market Risk Allocation ({round(mkt_exposure_pct * 100, 1)}%)</span>
-                <span style='color: #39d353;'>🛡️ Core Shield Cash Cushion reserves ({round((1 - mkt_exposure_pct) * 100, 1)}%)</span>
+                <span style='color: #39d353;'>🛡️ Core Shield Cash Security Layer ({round((1 - mkt_exposure_pct) * 100, 1)}%) <i style='color:#8b949e; font-size:0.75rem;'>(Includes ₹{round(total_harvested_surplus_pool,2)} locked returns)</i></span>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -285,13 +303,4 @@ n = horizon_years * 12
 required_monthly_sip = target_goal / (((1 + r)**n - 1) / r * (1 + r))
 
 st.markdown(f"""
-<div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d; text-align: center;'>
-    <span style='font-size: 0.85rem; color: #8b949e;'>REQUIRED SIP INSTALLMENT RADAR TO HIT TARGET</span><br>
-    <h2 style='color: #39d353; margin-top: 5px;'>₹{round(required_monthly_sip, 2)} / month</h2>
-    <span style='font-size: 0.75rem; color: #8b949e;'>Compounding over {horizon_years} years at an annualized growth velocity baseline of {expected_return}%.</span>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("---")
-st.caption(f"P.A.S.E Pro Terminal Network Active | Grid Node System Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
-        
+<div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px 
