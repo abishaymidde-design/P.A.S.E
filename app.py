@@ -125,7 +125,7 @@ if not st.session_state.authenticated:
 # 🛡️ AUTHENTICATED WORKSPACE DECK
 # -------------------------------------------------------------
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Suite Core v22.0")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Suite Core v23.0")
 
 auth_col1, auth_col2, _ = st.columns([2.0, 2.0, 5])
 with auth_col1:
@@ -243,6 +243,44 @@ composition_chart_data = {}
 total_active_assets_count = len([f for f in selected_search_assets if f in GLOBAL_AMFI_DB]) + len(stock_tickers_list)
 recommended_sip = (income * sip_pct) / 100
 per_asset_sip_budget = recommended_sip / max(total_active_assets_count, 1)
+
+# --- GLOBAL PRE-CALCULATION BLOCK TO PREVENT NAMEERRORS ---
+# Pre-calculating values before rendering layout ensures variables are accessible everywhere.
+if total_active_assets_count > 0:
+    for fund_name in selected_search_assets:
+        if fund_name not in GLOBAL_AMFI_DB:
+            continue
+        scheme_code = GLOBAL_AMFI_DB[fund_name]
+        default_cap, default_buy = 0.0, 0.0
+        for ra in recovered_assets:
+            if ra["type"] == "MF" and ra["code"] == scheme_code:
+                default_cap, default_buy = ra["capital"], ra["buy_nav"]
+        
+        # Pull live values to establish baseline definitions
+        if default_cap > 0 and default_buy > 0:
+            live_nav_tick = get_live_asset_price(scheme_code, is_stock=False)
+            if live_nav_tick is None:
+                live_nav_tick = default_buy
+            global_staked_capital += default_cap
+            global_current_market_value += (default_cap / default_buy) * live_nav_tick
+
+    for ticker_sym in stock_tickers_list:
+        clean_ticker = ticker_sym.strip().upper()
+        default_cap, default_buy = 0.0, 0.0
+        for ra in recovered_assets:
+            if ra["type"] == "STK" and ra["code"] == clean_ticker:
+                default_cap, default_buy = ra["capital"], ra["buy_nav"]
+        
+        if default_cap > 0 and default_buy > 0:
+            live_stock_tick = get_live_asset_price(clean_ticker, is_stock=True)
+            if live_stock_tick is None:
+                live_stock_tick = default_buy
+            global_staked_capital += default_cap
+            global_current_market_value += (default_cap / default_buy) * live_stock_tick
+
+# Reset consolidation pools so rendering loop calculates accumulation parameters cleanly
+global_staked_capital = 0.0
+global_current_market_value = 0.0
 
 # -------------------------------------------------------------
 # CORE WORKSPACE GRID RENDERING
@@ -391,38 +429,4 @@ if total_active_assets_count > 0:
                 st.info(f"🔵 STOCK MATRIX HOLD STEADY • Ticker performance stands steady at {round(current_yield_rate, 2)}%.")
         st.markdown("---")
 
-    # Render Visual Analytics Dashboard Graphs
-    if yield_chart_data or composition_chart_data:
-        st.subheader("📊 Live Analytics Performance Dashboard")
-        col_ch1, col_ch2 = st.columns(2)
-        with col_ch1:
-            st.markdown("**📈 Cross-Asset Absolute Yield Radar (%)**")
-            df_yields = pd.DataFrame(list(yield_chart_data.items()), columns=["Asset Label", "Yield (%)"]).set_index("Asset Label")
-            st.bar_chart(df_yields, height=220)
-        with col_ch2:
-            st.markdown("**💎 Integrated Capital Scale Distribution (₹)**")
-            df_comp = pd.DataFrame(list(composition_chart_data.items()), columns=["Asset Label", "Current Valuation (₹)"]).set_index("Asset Label")
-            st.bar_chart(df_comp, height=220)
-
-    # Render Consolidated Overview Profile Dashboards
-    if global_staked_capital > 0:
-        st.subheader("📊 Consolidated Master Overview")
-        master_profit = global_current_market_value - global_staked_capital
-        master_yield = (master_profit / global_staked_capital) * 100
-        
-        g1, g2, g3, g4 = st.columns(4)
-        with g1:
-            st.metric("Aggregate Staked Capital", fmt_inr(global_staked_capital))
-        with g2:
-            st.metric("Combined Market Valuation", fmt_inr(global_current_market_value))
-        with g3:
-            st.metric("Consolidated Net Returns", fmt_inr(master_profit))
-        with g4:
-            st.metric("Aggregate Portfolio Yield", f"{round(master_yield, 2)}%", "🛡️ Active User Registry Node Active")
-
-        # --- SAFE AND SEGREGATED PROGRESS DISPLAY LOGIC AREA ---
-        st.subheader("🛡️ Defensive Core Shield Master Balance Bar")
-        total_integrated_wealth = global_current_market_value + fd_reserves
-        
-        if total_integrated_wealth > 0.0:
-            mkt_exposure_pct 
+    # Render Visual Analytic
