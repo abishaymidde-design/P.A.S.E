@@ -7,101 +7,10 @@ import yfinance as yf
 import hashlib
 import json
 import os
+import extra_streamlit_components as stx
 
 # --- SYSTEM INITIALIZATION & THEME CORES ---
 st.set_page_config(page_title="P.A.S.E. Ultimate Command Center", page_icon="🛡️", layout="wide")
-
-# --- USER CREDENTIAL VAULT FUNCTIONS (FIXING THE CONS) ---
-VAULT_FILE = "vault.json"
-
-def load_credential_vault():
-    """Loads the automated JSON vault file safely, initializing an empty directory if missing"""
-    if os.path.exists(VAULT_FILE):
-        try:
-            with open(VAULT_FILE, "r") as f:
-                return json.load(f)
-        except:
-            return {}
-    return {}
-
-def save_credential_vault(data):
-    """Writes updated encrypted user blocks back to the vault storage layer"""
-    try:
-        with open(VAULT_FILE, "w") as f:
-            json.dump(data, f, indent=4)
-    except:
-        pass
-
-def make_secure_hash(password):
-    """Converts a plain-text password entry into an unreadable SHA-256 fingerprint"""
-    return hashlib.sha256(str.encode(password)).hexdigest()
-
-# Initialize localized state properties
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-if "auth_user" not in st.session_state:
-    st.session_state.auth_user = ""
-
-# -------------------------------------------------------------
-# 🔒 DARK-THEMED SECURITY GATE INTERFACE
-# -------------------------------------------------------------
-if not st.session_state.authenticated:
-    st.title("🔒 P.A.S.E. Security Checkpoint")
-    st.caption("Psychological Assistant for Stock Exchange • Terminal Access Gateway")
-    st.markdown("---")
-    
-    vault_db = load_credential_vault()
-    
-    # Render clean login/registration layout tabs
-    login_tab, register_tab = st.tabs(["🔑 Authorized Terminal Access", "📝 Register New Profile Node"])
-    
-    with login_tab:
-        login_user = st.text_input("Terminal Username ID:", key="login_uid").strip()
-        login_pass = st.text_input("Security Passphrase:", type="password", key=f"login_pwd_{len(vault_db)}")
-        
-        if st.button("Initialize Terminal Session", use_container_width=True):
-            if login_user in vault_db and vault_db[login_user] == make_secure_hash(login_pass):
-                st.session_state.authenticated = True
-                st.session_state.auth_user = login_user
-                st.rerun()
-            else:
-                st.error("❌ Access Denied: Invalid Username or Passphrase Signature match.")
-                
-    with register_tab:
-        st.caption("Initialize a brand-new encrypted entry record directly into the repository vault layout.")
-        new_user = st.text_input("Choose Username ID:", key="reg_uid").strip()
-        new_pass = st.text_input("Choose Security Passphrase:", type="password", key="reg_pwd")
-        confirm_pass = st.text_input("Confirm Security Passphrase:", type="password", key="reg_pwd_conf")
-        
-        if st.button("Deploy Profile Credentials", use_container_width=True):
-            if not new_user or not new_pass:
-                st.warning("⚠️ Configuration parameters cannot be left blank.")
-            elif new_user in vault_db:
-                st.error("❌ Identification ID conflict: That username node is already occupied.")
-            elif new_pass != confirm_pass:
-                st.error("❌ Verification mismatch: Passphrases do not match.")
-            else:
-                # Encrypt and automatically lock credentials away into the file layer
-                vault_db[new_user] = make_secure_hash(new_pass)
-                save_credential_vault(vault_db)
-                st.success(f"🎉 Profile Node '{new_user}' securely deployed to vault! Switch to the Access tab to log in.")
-                
-    st.stop() # Freeze the processing thread so nothing below renders unless authenticated
-
-# -------------------------------------------------------------
-# 🛡️ AUTHENTICATED WORKSPACE DECK (RENDERS ONLY AFTER LOGIN)
-# -------------------------------------------------------------
-
-# Main Title Stack Header
-st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Cross-Asset Multi-Engine v16.0")
-
-if st.button("🔒 Terminate Session"):
-    st.session_state.authenticated = False
-    st.session_state.auth_user = ""
-    st.rerun()
-
-st.markdown("---")
 
 # --- PATH A: AUTOMATED INDIAN CURRENCY FORMATTER MATRIX ---
 def fmt_inr(val):
@@ -126,6 +35,116 @@ def fmt_inr(val):
             return f"₹{sign}{num}.{dec}"
     except:
         return f"₹{val}"
+
+# --- USER CREDENTIAL VAULT FUNCTIONS ---
+VAULT_FILE = "vault.json"
+
+def load_credential_vault():
+    if os.path.exists(VAULT_FILE):
+        try:
+            with open(VAULT_FILE, "r") as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def save_credential_vault(data):
+    try:
+        with open(VAULT_FILE, "w") as f:
+            json.dump(data, f, indent=4)
+    except:
+        pass
+
+def make_secure_hash(password):
+    return hashlib.sha256(str.encode(password)).hexdigest()
+
+# Initialize Cookie Manager for persistent login routing across browser refreshes
+@st.cache_resource
+def get_cookie_manager():
+    return stx.CookieManager()
+
+cookie_manager = get_cookie_manager()
+
+# --- SECURITY SYSTEM LAYER CORE REWRITE ---
+vault_db = load_credential_vault()
+
+# Check browser cookies for active unexpired sessions
+cookie_user = cookie_manager.get(cookie="pase_auth_user")
+
+if cookie_user and cookie_user in vault_db:
+    st.session_state.authenticated = True
+    st.session_state.auth_user = cookie_user
+else:
+    if "authenticated" not in st.session_state:
+        st.session_state.authenticated = False
+
+# 🔒 DARK-THEMED SECURITY GATE INTERFACE
+if not st.session_state.authenticated:
+    st.title("🔒 P.A.S.E. Security Checkpoint")
+    st.caption("Psychological Assistant for Stock Exchange • Persistent Gateway Engine")
+    st.markdown("---")
+    
+    login_tab, register_tab = st.tabs(["🔑 Authorized Terminal Access", "📝 Register New Profile Node"])
+    
+    with login_tab:
+        login_user = st.text_input("Terminal Username ID:", key="login_uid").strip()
+        login_pass = st.text_input("Security Passphrase:", type="password", key=f"login_pwd_{len(vault_db)}")
+        
+        if st.button("Initialize Terminal Session", use_container_width=True):
+            if login_user in vault_db and vault_db[login_user] == make_secure_hash(login_pass):
+                st.session_state.authenticated = True
+                st.session_state.auth_user = login_user
+                # Drop tracking cookie into user's browser valid for 7 days
+                cookie_manager.set("pase_auth_user", login_user, expires_at=dt.datetime.now() + dt.timedelta(days=7))
+                st.rerun()
+            else:
+                st.error("❌ Access Denied: Invalid Username or Passphrase Signature match.")
+                
+    with register_tab:
+        st.caption("Initialize a brand-new encrypted entry record directly into the repository vault layout.")
+        new_user = st.text_input("Choose Username ID:", key="reg_uid").strip()
+        new_pass = st.text_input("Choose Security Passphrase:", type="password", key="reg_pwd")
+        confirm_pass = st.text_input("Confirm Security Passphrase:", type="password", key="reg_pwd_conf")
+        
+        if st.button("Deploy Profile Credentials", use_container_width=True):
+            if not new_user or not new_pass:
+                st.warning("⚠️ Configuration parameters cannot be left blank.")
+            elif new_user in vault_db:
+                st.error("❌ Identification ID conflict: That username node is already occupied.")
+            elif new_pass != confirm_pass:
+                st.error("❌ Verification mismatch: Passphrases do not match.")
+            else:
+                vault_db[new_user] = make_secure_hash(new_pass)
+                save_credential_vault(vault_db)
+                st.success(f"🎉 Profile Node '{new_user}' securely deployed! Switch tabs to log in.")
+                
+    st.stop()
+
+# -------------------------------------------------------------
+# 🛡️ AUTHENTICATED WORKSPACE DECK (RENDERS ONLY AFTER LOGIN)
+# -------------------------------------------------------------
+st.title("🛡️ P.A.S.E. Ultimate Terminal")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Persistent Suite v17.0")
+
+# Session Modification Row
+auth_col1, auth_col2, _ = st.columns([1.5, 1.5, 5])
+
+with auth_col1:
+    if st.button("🧹 Flush Workspace Inputs", use_container_width=True):
+        # Clears URL query strings completely without signing out
+        st.query_params.clear()
+        st.toast("Workspace inputs reset to clean state!", icon="🧹")
+        st.rerun()
+
+with auth_col2:
+    if st.button("🔒 Terminate Session", use_container_width=True):
+        st.session_state.authenticated = False
+        st.session_state.auth_user = ""
+        cookie_manager.delete("pase_auth_user")
+        st.query_params.clear()
+        st.rerun()
+
+st.markdown("---")
 
 # --- GLOBAL LIVE AMFI AUTOMATION INTERNET ENGINES ---
 @st.cache_data(ttl=86400)
@@ -171,9 +190,10 @@ if "state" in query_params:
         blocks = decoded_state.split("|")
         for b in blocks:
             p = b.split(":")
-            recovered_assets.append({
-                "type": p[0], "code": p[1], "capital": float(p[2]), "buy_nav": float(p[3]), "target": float(p[4]), "vol": float(p[5])
-            })
+            if len(p) == 6:
+                recovered_assets.append({
+                    "type": p[0], "code": p[1], "capital": float(p[2]), "buy_nav": float(p[3]), "target": float(p[4]), "vol": float(p[5])
+                })
     except:
         pass
 
@@ -308,7 +328,6 @@ if total_active_assets_count > 0:
                 st.success(f"🚨 STRATEGIC EXIT CEILING BREACHED • Redeem exactly {round(u_liquidate, 3)} units (~{fmt_inr(trim_cash)}) to lock in {tranche_vol}% of surplus profit.")
             else:
                 st.info(f"🔵 CORE ACCUMULATION STATUS SECURE • Tracking steady at {round(current_yield_rate, 2)}%. No tactical adjustments necessary.")
-        st.markdown("---")
 
     # Process Live Stocks Block
     for ticker_sym in stock_tickers_list:
@@ -320,6 +339,7 @@ if total_active_assets_count > 0:
             if ra["type"] == "STK" and ra["code"] == clean_ticker:
                 default_cap, default_buy, default_tgt, default_vol = ra["capital"], ra["buy_nav"], ra["target"], ra["vol"]
                 
+        st.markdown("---")
         st.subheader(f"⚡ [STOCK] {clean_ticker}")
         st.caption(f"Real-Time Exchange Stream | Target Recommended SIP: {fmt_inr(per_asset_sip_budget)}/mo")
         
@@ -376,10 +396,10 @@ if total_active_assets_count > 0:
                 st.success(f"🚨 HIGH-VELOCITY HARVEST TARGET ACCESSED • Sell exactly {round(shares_to_liquidate, 3)} shares (~{fmt_inr(trim_cash)}) to lock in {tranche_vol}% of surplus gains.")
             else:
                 st.info(f"🔵 STOCK MATRIX HOLD STEADY • Ticker performance stands steady at {round(current_yield_rate, 2)}%. Maintain long positions.")
-        st.markdown("---")
 
     # Render Visual Analytics Dashboard Graphs
     if yield_chart_data or composition_chart_data:
+        st.markdown("---")
         st.subheader("📊 Live Analytics Performance Dashboard")
         col_ch1, col_ch2 = st.columns(2)
         with col_ch1:
@@ -398,14 +418,4 @@ if total_active_assets_count > 0:
         master_profit = global_current_market_value - global_staked_capital
         master_yield = (master_profit / global_staked_capital) * 100
         
-        g1, g2, g3, g4 = st.columns(4)
-        with g1:
-            st.metric("Aggregate Staked Capital", fmt_inr(global_staked_capital))
-        with g2:
-            st.metric("Combined Market Valuation", fmt_inr(global_current_market_value))
-        with g3:
-            st.metric("Consolidated Net Returns", fmt_inr(master_profit))
-        with g4:
-            st.metric("Aggregate Portfolio Yield", f"{round(master_yield, 2)}%", "🕒 Real-time Cross-Asset Feed Active")
-
-        # Render 
+        g1, g2, g3, 
