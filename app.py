@@ -58,15 +58,11 @@ def save_credential_vault(data):
 def make_secure_hash(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
-# Initialize Cookie Manager for persistent login routing across browser refreshes
-@st.cache_resource
-def get_cookie_manager():
-    return stx.CookieManager()
-
-cookie_manager = get_cookie_manager()
-
 # --- SECURITY SYSTEM LAYER CORE REWRITE ---
 vault_db = load_credential_vault()
+
+# Initialize Cookie Manager natively without caching to resolve widget creation constraint exceptions
+cookie_manager = stx.CookieManager()
 
 # Check browser cookies for active unexpired sessions
 cookie_user = cookie_manager.get(cookie="pase_auth_user")
@@ -124,14 +120,13 @@ if not st.session_state.authenticated:
 # 🛡️ AUTHENTICATED WORKSPACE DECK (RENDERS ONLY AFTER LOGIN)
 # -------------------------------------------------------------
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Persistent Suite v17.0")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Persistent Suite v17.1")
 
 # Session Modification Row
 auth_col1, auth_col2, _ = st.columns([1.5, 1.5, 5])
 
 with auth_col1:
     if st.button("🧹 Flush Workspace Inputs", use_container_width=True):
-        # Clears URL query strings completely without signing out
         st.query_params.clear()
         st.toast("Workspace inputs reset to clean state!", icon="🧹")
         st.rerun()
@@ -418,4 +413,7 @@ if total_active_assets_count > 0:
         master_profit = global_current_market_value - global_staked_capital
         master_yield = (master_profit / global_staked_capital) * 100
         
-        g1, g2, g3, 
+        g1, g2, g3, g4 = st.columns(4)
+        with g1:
+            st.metric("Aggregate Staked Capital", fmt_inr(global_staked_capital))
+      
