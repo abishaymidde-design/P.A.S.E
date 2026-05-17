@@ -115,7 +115,7 @@ if not st.session_state.authenticated:
 # 🛡️ AUTHENTICATED WORKSPACE DECK
 # -------------------------------------------------------------
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Persistent Suite v17.2")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Suite Core v17.3")
 
 auth_col1, auth_col2, _ = st.columns([1.5, 1.5, 5])
 with auth_col1:
@@ -411,4 +411,4 @@ if total_active_assets_count > 0:
             st.metric("Aggregate Portfolio Yield", f"{round(master_yield, 2)}%", "🕒 Persistent Active Session Token Linked")
 
         # Render Strategic Balance Indicator Bar Chart
-        st.subheader("🛡️ Defensiv
+        st.subheader("🛡️ Defensive Core
