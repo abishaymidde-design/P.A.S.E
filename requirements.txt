@@ -1,2 +1,5 @@
 streamlit
+requests
+pandas
 yfinance
+extra-streamlit-components
