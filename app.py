@@ -33,7 +33,7 @@ st.markdown("""
 
 # Main Title Stack Header
 st.title("🛡️ P.A.S.E. Pro Workspace")
-st.caption("Psychological Assistant for Stock Exchange • Live Analytics Visualization Engine v13.2")
+st.caption("Psychological Assistant for Stock Exchange • Live Analytics Visualization Engine v13.3")
 st.markdown("---")
 
 # --- GLOBAL LIVE AMFI AUTOMATION INTERNET ENGINES ---
@@ -87,9 +87,9 @@ with st.sidebar:
     
     # 1. Capital Distribution Layout
     st.subheader("💰 1. Allocation Planner")
-    income = st.number_input("Monthly Income (₹)", min_value=0, value=init_income, step=5000)
-    sip_pct = st.slider("Target Allocation Pace (%)", min_value=5, max_value=50, value=init_sip_pct, step=5)
-    fd_reserves = st.number_input("Core Shield Cash (FD/Savings) (₹)", min_value=0.0, value=init_shield, step=1000.0)
+    income = st.number_input("Monthly Income (₹)", min_value=0, value=income if 'income' in locals() else init_income, step=5000)
+    sip_pct = st.slider("Target Allocation Pace (%)", min_value=5, max_value=50, value=sip_pct if 'sip_pct' in locals() else init_sip_pct, step=5)
+    fd_reserves = st.number_input("Core Shield Cash (FD/Savings) (₹)", min_value=0.0, value=fd_reserves if 'fd_reserves' in locals() else init_shield, step=1000.0)
     
     st.markdown("---")
     
@@ -175,7 +175,7 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
             global_staked_capital += inv_cap
             global_current_market_value += current_valuation
             
-            # Map values out to charts registries
+            # Data validation gate: Only map to charts if metrics are non-zero real-world numbers
             yield_chart_data[short_label] = round(current_yield_rate, 2)
             composition_chart_data[short_label] = round(current_valuation, 2)
             
@@ -210,9 +210,9 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
         st.markdown("<br><hr style='border: 1px solid #21262d;'><br>", unsafe_allow_html=True)
 
     # -------------------------------------------------------------
-    # DISPLAY VISUAL CHARTS DECK
+    # DISPLAY VISUAL CHARTS DECK (Gated validation fix)
     # -------------------------------------------------------------
-    if yield_chart_data or composition_chart_data:
+    if yield_chart_data and composition_chart_data:
         st.markdown("### 📊 Live Analytics Performance Dashboard")
         col_ch1, col_ch2 = st.columns(2)
         
@@ -250,50 +250,7 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
         st.markdown("### 🛡️ Defensive Core Shield Master Balance Bar")
         total_integrated_wealth = global_current_market_value + fd_reserves
         mkt_exposure_pct = (global_current_market_value / total_integrated_wealth)
-        shield_reserve_pct = (fd_reserves / total_integrated_wealth)
         
         st.markdown(f"""
-        <div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d; margin-bottom: 8px;'>
-            <div style='display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px;'>
-                <span style='color: #58a6ff;'>📈 Combined Market Risk Allocation ({round(mkt_exposure_pct * 100, 1)}%)</span>
-                <span style='color: #39d353;'>🛡️ Core Shield Cash Cushion reserves ({round(shield_reserve_pct * 100, 1)}%)</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        st.progress(mkt_exposure_pct)
-        st.markdown(f"<div style='text-align: center; color: #ffffff; font-weight: bold; font-size: 0.95rem; margin-top: -5px; margin-bottom:25px;'>TOTAL INTEGRATED WEALTH POOL VALUE: ₹{round(total_integrated_wealth, 2)}</div>", unsafe_allow_html=True)
-
-        # --- BACKGROUND AUTOMATED STATE SYNC ENGINE ---
-        raw_state_string = "|".join(url_state_builder)
-        st.query_params.update(inc=income, sip=sip_pct, shd=fd_reserves, state=raw_state_string)
-
-else:
-    st.info("### 📊 Terminal Workspace Active Idle Matrix\n\nOpen up the left control menu (`»`). Enter keywords into the **Universal Asset Registry Search Engine** and select your fund houses to activate your tracking command dashboard panels.")
-
-# --- PERSISTENT PREDICTIVE FORWARD PLANNER ---
-st.markdown("---")
-st.markdown("### 🎯 Predictive Compound Horizon Playground")
-col_s1, col_s2, col_s3 = st.columns(3)
-with col_s1:
-    target_goal = st.number_input("Target Corpus Goal (₹)", min_value=10000, value=500000, step=50000)
-with col_s2:
-    horizon_years = st.slider("Time Horizon Grid (Years)", min_value=1, max_value=30, value=5, step=1)
-with col_s3:
-    expected_return = st.slider("Expected Compounding Rate (CAGR %)", min_value=8, max_value=25, value=12, step=1)
-
-# Compile calculations strictly after all inputs are securely rendered on screen
-r = (expected_return / 12) / 100
-n = horizon_years * 12
-required_monthly_sip = target_goal / (((1 + r)**n - 1) / r * (1 + r))
-
-st.markdown(f"""
-<div style='background-color: #161b22; padding: 15px; border-radius: 6px; border: 1px solid #30363d; text-align: center;'>
-    <span style='font-size: 0.85rem; color: #8b949e;'>REQUIRED SIP INSTALLMENT RADAR TO HIT TARGET</span><br>
-    <h2 style='color: #39d353; margin-top: 5px;'>₹{round(required_monthly_sip, 2)} / month</h2>
-    <span style='font-size: 0.75rem; color: #8b949e;'>Compounding over {horizon_years} years at an annualized growth velocity baseline of {expected_return}%.</span>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("---")
-st.caption(f"P.A.S.E Pro Terminal Network Active | Grid Node System Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
+        <div style='background-color: #161b22
         
