@@ -6,7 +6,7 @@ import pandas as pd
 import yfinance as yf
 import extra_streamlit_components as stx
 
-# --- SYSTEM INITIALIZATION & THEME CORES ---
+# --- SYSTEM INITIALIZATION ---
 st.set_page_config(page_title="P.A.S.E. Ultimate Command Center", page_icon="🛡️", layout="wide")
 
 # --- PATH A: AUTOMATED INDIAN CURRENCY FORMATTER MATRIX ---
@@ -36,13 +36,12 @@ def fmt_inr(val):
 # -------------------------------------------------------------
 # 🔒 SECURE HARDCODED USER CREDENTIAL REGISTRY MATRIX
 # -------------------------------------------------------------
-# Direct, absolute string matching to eliminate hash generation errors completely.
 CREDENTIAL_REGISTRY = {
     "Psynode": "admin123",
     "Psycode": "admin123"
 }
 
-# --- SECURITY SYSTEM LAYER PERSISTENT COOKIE FLOW ---
+# --- SECURITY SYSTEM LAYER COOKIE FLOW ---
 cookie_manager = stx.CookieManager()
 cookie_user = cookie_manager.get(cookie="pase_auth_user")
 
@@ -78,7 +77,7 @@ if not st.session_state.authenticated:
 # 🛡️ AUTHENTICATED WORKSPACE DECK
 # -------------------------------------------------------------
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Core Production v19.0")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Core Production v19.5")
 
 auth_col1, auth_col2, _ = st.columns([2.0, 2.0, 5])
 with auth_col1:
@@ -296,8 +295,8 @@ if total_active_assets_count > 0:
             buy_nav = st.number_input("Your Average Purchase Price (₹)", min_value=0.0, value=default_buy, step=1.0, key=f"nav_stk_{clean_ticker}")
         with col_s3:
             tgt_yield = st.slider("Target Exit Ceiling (%)", min_value=5.0, max_value=30.0, value=default_tgt, step=0.5, key=f"tgt_stk_{clean_ticker}")
-        with col_s4 = st.slider("Harvest Volume Size (%)", min_value=10, max_value=100, value=int(default_vol), step=5, key=f"vol_stk_{clean_ticker}"):
-            pass
+        with col_s4:
+            tranche_vol = st.slider("Harvest Volume Size (%)", min_value=10, max_value=100, value=int(default_vol), step=5, key=f"vol_stk_{clean_ticker}")
             
         url_state_builder.append(f"STK:{clean_ticker}:{inv_cap}:{buy_nav}:{tgt_yield}:{tranche_vol}")
 
@@ -327,7 +326,7 @@ if total_active_assets_count > 0:
 
             if current_yield_rate <= -15.0:
                 h_lumpsum = inv_cap * 0.50
-                st.error(f"🚨 STRATEGIC DISCOUNT ALERT • Deploy {fmt_inr(h_lumpsum)} cache.")
+                st.error(f"🚨 HARVEST DISCOUNT ALERT • Deploy {fmt_inr(h_lumpsum)} cache.")
             elif -15.0 < current_yield_rate <= -10.0:
                 m_lumpsum = inv_cap * 0.30
                 st.warning(f"🛒 ACCUMULATION MODE LADDER B • Deploy {fmt_inr(m_lumpsum)} reserves.")
@@ -410,4 +409,5 @@ required_monthly_sip = target_goal / (((1 + r)**n - 1) / r * (1 + r))
 msg_text = "REQUIRED MONTHLY DEPLOYMENT TO HIT TARGET: " + fmt_inr(required_monthly_sip) + " / month (Compounding over " + str(horizon_years) + " years at a baseline interest rate of " + str(expected_return) + "%)"
 st.success(msg_text)
 st.markdown("---")
-st.caption(f"P.A.S.E Pro Terminal Network Active | Univer
+st.caption(f"P.A.S.E Pro Terminal Network Active | Universal Engine Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
+                
