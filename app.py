@@ -4,7 +4,6 @@ import requests
 import urllib.parse
 import pandas as pd
 import yfinance as yf
-import hashlib
 import extra_streamlit_components as stx
 
 # --- SYSTEM INITIALIZATION & THEME CORES ---
@@ -34,16 +33,13 @@ def fmt_inr(val):
     except:
         return f"₹{val}"
 
-def make_secure_hash(password):
-    return hashlib.sha256(str.encode(password)).hexdigest()
-
 # -------------------------------------------------------------
 # 🔒 SECURE HARDCODED USER CREDENTIAL REGISTRY MATRIX
 # -------------------------------------------------------------
-# Verified SHA-256 signatures for the passphrase 'admin123'
+# Direct, absolute string matching to eliminate hash generation errors completely.
 CREDENTIAL_REGISTRY = {
-    "Psynode": "0192023a7bbd73250516f069df18b5006e71c5de112817b7b2cd9259fc6c5180",
-    "Psycode": "0192023a7bbd73250516f069df18b5006e71c5de112817b7b2cd9259fc6c5180"
+    "Psynode": "admin123",
+    "Psycode": "admin123"
 }
 
 # --- SECURITY SYSTEM LAYER PERSISTENT COOKIE FLOW ---
@@ -68,13 +64,13 @@ if not st.session_state.authenticated:
     login_pass = st.text_input("Security Passphrase:", type="password", key="login_pwd")
     
     if st.button("Initialize Terminal Session", use_container_width=True):
-        if login_user in CREDENTIAL_REGISTRY and CREDENTIAL_REGISTRY[login_user] == make_secure_hash(login_pass):
+        if login_user in CREDENTIAL_REGISTRY and CREDENTIAL_REGISTRY[login_user] == login_pass:
             st.session_state.authenticated = True
             st.session_state.auth_user = login_user
             cookie_manager.set("pase_auth_user", login_user, expires_at=dt.datetime.now() + dt.timedelta(days=7))
             st.rerun()
         else:
-            st.error("❌ Access Denied: Invalid Username or Passphrase Signature match.")
+            st.error("❌ Access Denied: Invalid Username or Passphrase matching signature.")
             
     st.stop()
 
@@ -82,7 +78,7 @@ if not st.session_state.authenticated:
 # 🛡️ AUTHENTICATED WORKSPACE DECK
 # -------------------------------------------------------------
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Core Production v18.3")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Core Production v19.0")
 
 auth_col1, auth_col2, _ = st.columns([2.0, 2.0, 5])
 with auth_col1:
@@ -132,9 +128,9 @@ GLOBAL_AMFI_DB = load_global_amfi_directory()
 
 # --- RECOVER ROUTED URL STATE PARAMETERS ---
 query_params = st.query_params
-income_val = int(query_params.get("inc", 50000)) if "inc" in query_params else 50000
-sip_pct_val = int(query_params.get("sip", 15)) if "sip" in query_params else 15
-fd_reserves_val = float(query_params.get("shd", 25000.0)) if "shd" in query_params else 25000.0
+income = int(query_params.get("inc", 50000)) if "inc" in query_params else 50000
+sip_pct = int(query_params.get("sip", 15)) if "sip" in query_params else 15
+fd_reserves = float(query_params.get("shd", 25000.0)) if "shd" in query_params else 25000.0
 
 recovered_assets = []
 if "state" in query_params:
@@ -153,9 +149,9 @@ if "state" in query_params:
 # --- SIDEBAR COMMAND MODULE CONTROL STATION ---
 with st.sidebar:
     st.header("⚙️ TERMINAL COMMAND DECK")
-    income = st.number_input("Monthly Income (₹)", min_value=0, value=income_val, step=5000)
-    sip_pct = st.slider("Target Allocation Pace (%)", min_value=5, max_value=50, value=sip_pct_val, step=5)
-    fd_reserves = st.number_input("Core Shield Cash (FD/Savings) (₹)", min_value=0.0, value=fd_reserves_val, step=1000.0)
+    income = st.number_input("Monthly Income (₹)", min_value=0, value=income, step=5000)
+    sip_pct = st.slider("Target Allocation Pace (%)", min_value=5, max_value=50, value=sip_pct, step=5)
+    fd_reserves = st.number_input("Core Shield Cash (FD/Savings) (₹)", min_value=0.0, value=fd_reserves, step=1000.0)
     
     st.markdown("---")
     asset_class_choice = st.radio("Choose Asset Class to Add:", ["Indian Mutual Funds", "NSE / BSE Live Stocks & ETFs"])
@@ -300,8 +296,8 @@ if total_active_assets_count > 0:
             buy_nav = st.number_input("Your Average Purchase Price (₹)", min_value=0.0, value=default_buy, step=1.0, key=f"nav_stk_{clean_ticker}")
         with col_s3:
             tgt_yield = st.slider("Target Exit Ceiling (%)", min_value=5.0, max_value=30.0, value=default_tgt, step=0.5, key=f"tgt_stk_{clean_ticker}")
-        with col_s4:
-            tranche_vol = st.slider("Harvest Volume Size (%)", min_value=10, max_value=100, value=int(default_vol), step=5, key=f"vol_stk_{clean_ticker}")
+        with col_s4 = st.slider("Harvest Volume Size (%)", min_value=10, max_value=100, value=int(default_vol), step=5, key=f"vol_stk_{clean_ticker}"):
+            pass
             
         url_state_builder.append(f"STK:{clean_ticker}:{inv_cap}:{buy_nav}:{tgt_yield}:{tranche_vol}")
 
@@ -411,4 +407,7 @@ r = (expected_return / 12) / 100
 n = horizon_years * 12
 required_monthly_sip = target_goal / (((1 + r)**n - 1) / r * (1 + r))
 
-# Safe string display entirely free of unclosed brace vulnerabilities
+msg_text = "REQUIRED MONTHLY DEPLOYMENT TO HIT TARGET: " + fmt_inr(required_monthly_sip) + " / month (Compounding over " + str(horizon_years) + " years at a baseline interest rate of " + str(expected_return) + "%)"
+st.success(msg_text)
+st.markdown("---")
+st.caption(f"P.A.S.E Pro Terminal Network Active | Univer
