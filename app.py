@@ -39,7 +39,6 @@ def fmt_inr(val):
 VAULT_FILE = "vault.json"
 
 def load_credential_vault():
-    # Hardcoded base defaults so you always have a fallback key out of the box
     defaults = {"Psynode": "admin123", "Psycode": "admin123"}
     if os.path.exists(VAULT_FILE):
         try:
@@ -79,7 +78,7 @@ else:
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
 
-# 🔒 SECURITY ACCESS GATE INTERFACE WITH REGISTER TAB RESTORED
+# 🔒 SECURITY ACCESS GATE INTERFACE
 if not st.session_state.authenticated:
     st.title("🔒 P.A.S.E. Security Checkpoint")
     st.caption("Psychological Assistant for Stock Exchange • Permanent Gateway Engine")
@@ -126,7 +125,7 @@ if not st.session_state.authenticated:
 # 🛡️ AUTHENTICATED WORKSPACE DECK
 # -------------------------------------------------------------
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Dynamic Vault Suite v20.0")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Suite Core v21.0")
 
 auth_col1, auth_col2, _ = st.columns([2.0, 2.0, 5])
 with auth_col1:
@@ -421,6 +420,7 @@ if total_active_assets_count > 0:
         with g4:
             st.metric("Aggregate Portfolio Yield", f"{round(master_yield, 2)}%", "🛡️ Active User Registry Node Active")
 
-        # Render Strategic Balance Indicator Bar Chart
+        # Render Strategic Balance Indicator Bar Chart (SAFE PLACEMENT INDEPENDENT OF MATH SCOPE LOGIC)
         st.subheader("🛡️ Defensive Core Shield Master Balance Bar")
-        total_integrated_wealth = global_current_mar
+        total_integrated_wealth = global_current_market_value + fd_reserves
+        mkt_exposure_pct = float(global_cu
