@@ -5,8 +5,6 @@ import urllib.parse
 import pandas as pd
 import yfinance as yf
 import hashlib
-import json
-import os
 import extra_streamlit_components as stx
 
 # --- SYSTEM INITIALIZATION & THEME CORES ---
@@ -36,86 +34,56 @@ def fmt_inr(val):
     except:
         return f"₹{val}"
 
-# --- USER CREDENTIAL VAULT FUNCTIONS ---
-VAULT_FILE = "vault.json"
-
-def load_credential_vault():
-    if os.path.exists(VAULT_FILE):
-        try:
-            with open(VAULT_FILE, "r") as f:
-                return json.load(f)
-        except:
-            return {}
-    return {}
-
-def save_credential_vault(data):
-    try:
-        with open(VAULT_FILE, "w") as f:
-            json.dump(data, f, indent=4)
-    except:
-        pass
-
 def make_secure_hash(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
 
-# --- SECURITY SYSTEM LAYER CORE ---
-vault_db = load_credential_vault()
+# -------------------------------------------------------------
+# 🔒 SECURE HARDCODED USER CREDENTIAL REGISTRY MATRIX
+# -------------------------------------------------------------
+# Secure hashed representation of your passphrase keys. 
+# This completely eliminates volatile server file resets.
+CREDENTIAL_REGISTRY = {
+    "Psynode": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918",  # default: admin123
+    "Psycode": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"   # default: admin123
+}
+
+# --- SECURITY SYSTEM LAYER PERSISTENT COOKIAL FLOW ---
 cookie_manager = stx.CookieManager()
 cookie_user = cookie_manager.get(cookie="pase_auth_user")
 
-if cookie_user and cookie_user in vault_db:
+if cookie_user and cookie_user in CREDENTIAL_REGISTRY:
     st.session_state.authenticated = True
     st.session_state.auth_user = cookie_user
 else:
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
 
-# 🔒 SECURITY ACCESS GATE
+# 🔒 SECURITY ACCESS GATE INTERFACE
 if not st.session_state.authenticated:
     st.title("🔒 P.A.S.E. Security Checkpoint")
-    st.caption("Psychological Assistant for Stock Exchange • Persistent Gateway Engine")
+    st.caption("Psychological Assistant for Stock Exchange • Permanent Gateway Engine")
     st.markdown("---")
     
-    login_tab, register_tab = st.tabs(["🔑 Authorized Terminal Access", "📝 Register New Profile Node"])
+    st.subheader("🔑 Authorized Terminal Access")
+    login_user = st.text_input("Terminal Username ID:", key="login_uid").strip()
+    login_pass = st.text_input("Security Passphrase:", type="password", key="login_pwd")
     
-    with login_tab:
-        login_user = st.text_input("Terminal Username ID:", key="login_uid").strip()
-        login_pass = st.text_input("Security Passphrase:", type="password", key=f"login_pwd_{len(vault_db)}")
-        
-        if st.button("Initialize Terminal Session", use_container_width=True):
-            if login_user in vault_db and vault_db[login_user] == make_secure_hash(login_pass):
-                st.session_state.authenticated = True
-                st.session_state.auth_user = login_user
-                cookie_manager.set("pase_auth_user", login_user, expires_at=dt.datetime.now() + dt.timedelta(days=7))
-                st.rerun()
-            else:
-                st.error("❌ Access Denied: Invalid Username or Passphrase Signature match.")
-                
-    with register_tab:
-        st.caption("Initialize a brand-new encrypted entry record directly into the repository vault layout.")
-        new_user = st.text_input("Choose Username ID:", key="reg_uid").strip()
-        new_pass = st.text_input("Choose Security Passphrase:", type="password", key="reg_pwd")
-        confirm_pass = st.text_input("Confirm Security Passphrase:", type="password", key="reg_pwd_conf")
-        
-        if st.button("Deploy Profile Credentials", use_container_width=True):
-            if not new_user or not new_pass:
-                st.warning("⚠️ Configuration parameters cannot be left blank.")
-            elif new_user in vault_db:
-                st.error("❌ Identification ID conflict: That username node is already occupied.")
-            elif new_pass != confirm_pass:
-                st.error("❌ Verification mismatch: Passphrases do not match.")
-            else:
-                vault_db[new_user] = make_secure_hash(new_pass)
-                save_credential_vault(vault_db)
-                st.success(f"🎉 Profile Node '{new_user}' securely deployed! Switch tabs to log in.")
-                
+    if st.button("Initialize Terminal Session", use_container_width=True):
+        if login_user in CREDENTIAL_REGISTRY and CREDENTIAL_REGISTRY[login_user] == make_secure_hash(login_pass):
+            st.session_state.authenticated = True
+            st.session_state.auth_user = login_user
+            cookie_manager.set("pase_auth_user", login_user, expires_at=dt.datetime.now() + dt.timedelta(days=7))
+            st.rerun()
+        else:
+            st.error("❌ Access Denied: Invalid Username or Passphrase Signature match.")
+            
     st.stop()
 
 # -------------------------------------------------------------
-# 🛡️ AUTHENTICATED WORKSPACE DECK
+# 🛡️ AUTHENTICATED WORKSPACE DECK (RENDERS ONLY ON SUCCESSFUL AUTH)
 # -------------------------------------------------------------
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Suite Core v17.8")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Core Production v18.0")
 
 auth_col1, auth_col2, _ = st.columns([2.0, 2.0, 5])
 with auth_col1:
@@ -411,6 +379,21 @@ if total_active_assets_count > 0:
             st.metric("Aggregate Portfolio Yield", f"{round(master_yield, 2)}%", "🕒 Persistent Active Session Token Linked")
 
         # Render Strategic Balance Indicator Bar Chart
+        st.subheader("🛡️ Defensive Core Shield Master Balance Bar")
+        total_integrated_wealth = global_current_market_value + fd_reserves
+        mkt_exposure_pct = float(global_current_market_value / total_integrated_wealth) if total_integrated_wealth > 0 else 0.0
+        mkt_exposure_pct = max(0.0, min(1.0, mkt_exposure_pct))
+        
+        st.caption(f"📈 Combined Market Risk Exposure: {round(mkt_exposure_pct * 100, 1)}% | 🛡️ Cash Security Layer: {round((1 - mkt_exposure_pct) * 100, 1)}% (Includes {fmt_inr(total_harvested_surplus_pool)} harvested gains)")
         st.progress(mkt_exposure_pct)
+        st.info(f"TOTAL INTEGRATED WEALTH POOL VALUE: {fmt_inr(total_integrated_wealth)}")
 
- 
+        # Sync parameters to URL string
+        raw_state_string = "|".join(url_state_builder)
+        st.query_params.update(inc=income, sip=sip_pct, shd=fd_reserves, state=raw_state_string)
+
+else:
+    st.info("### 📊 Terminal Workspace Active Idle Matrix\n\nOpen up the left control menu (`»`). Choose an asset class and deploy tracking containers to start your dashboard pipelines.")
+
+# -------------------------------------------------------------
+# 🎯 FIXED DEPOSIT
