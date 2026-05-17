@@ -4,13 +4,103 @@ import requests
 import urllib.parse
 import pandas as pd
 import yfinance as yf
+import hashlib
+import json
+import os
 
 # --- SYSTEM INITIALIZATION & THEME CORES ---
 st.set_page_config(page_title="P.A.S.E. Ultimate Command Center", page_icon="🛡️", layout="wide")
 
+# --- USER CREDENTIAL VAULT FUNCTIONS (FIXING THE CONS) ---
+VAULT_FILE = "vault.json"
+
+def load_credential_vault():
+    """Loads the automated JSON vault file safely, initializing an empty directory if missing"""
+    if os.path.exists(VAULT_FILE):
+        try:
+            with open(VAULT_FILE, "r") as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def save_credential_vault(data):
+    """Writes updated encrypted user blocks back to the vault storage layer"""
+    try:
+        with open(VAULT_FILE, "w") as f:
+            json.dump(data, f, indent=4)
+    except:
+        pass
+
+def make_secure_hash(password):
+    """Converts a plain-text password entry into an unreadable SHA-256 fingerprint"""
+    return hashlib.sha256(str.encode(password)).hexdigest()
+
+# Initialize localized state properties
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+if "auth_user" not in st.session_state:
+    st.session_state.auth_user = ""
+
+# -------------------------------------------------------------
+# 🔒 DARK-THEMED SECURITY GATE INTERFACE
+# -------------------------------------------------------------
+if not st.session_state.authenticated:
+    st.title("🔒 P.A.S.E. Security Checkpoint")
+    st.caption("Psychological Assistant for Stock Exchange • Terminal Access Gateway")
+    st.markdown("---")
+    
+    vault_db = load_credential_vault()
+    
+    # Render clean login/registration layout tabs
+    login_tab, register_tab = st.tabs(["🔑 Authorized Terminal Access", "📝 Register New Profile Node"])
+    
+    with login_tab:
+        login_user = st.text_input("Terminal Username ID:", key="login_uid").strip()
+        login_pass = st.text_input("Security Passphrase:", type="password", key=f"login_pwd_{len(vault_db)}")
+        
+        if st.button("Initialize Terminal Session", use_container_width=True):
+            if login_user in vault_db and vault_db[login_user] == make_secure_hash(login_pass):
+                st.session_state.authenticated = True
+                st.session_state.auth_user = login_user
+                st.rerun()
+            else:
+                st.error("❌ Access Denied: Invalid Username or Passphrase Signature match.")
+                
+    with register_tab:
+        st.caption("Initialize a brand-new encrypted entry record directly into the repository vault layout.")
+        new_user = st.text_input("Choose Username ID:", key="reg_uid").strip()
+        new_pass = st.text_input("Choose Security Passphrase:", type="password", key="reg_pwd")
+        confirm_pass = st.text_input("Confirm Security Passphrase:", type="password", key="reg_pwd_conf")
+        
+        if st.button("Deploy Profile Credentials", use_container_width=True):
+            if not new_user or not new_pass:
+                st.warning("⚠️ Configuration parameters cannot be left blank.")
+            elif new_user in vault_db:
+                st.error("❌ Identification ID conflict: That username node is already occupied.")
+            elif new_pass != confirm_pass:
+                st.error("❌ Verification mismatch: Passphrases do not match.")
+            else:
+                # Encrypt and automatically lock credentials away into the file layer
+                vault_db[new_user] = make_secure_hash(new_pass)
+                save_credential_vault(vault_db)
+                st.success(f"🎉 Profile Node '{new_user}' securely deployed to vault! Switch to the Access tab to log in.")
+                
+    st.stop() # Freeze the processing thread so nothing below renders unless authenticated
+
+# -------------------------------------------------------------
+# 🛡️ AUTHENTICATED WORKSPACE DECK (RENDERS ONLY AFTER LOGIN)
+# -------------------------------------------------------------
+
 # Main Title Stack Header
 st.title("🛡️ P.A.S.E. Ultimate Terminal")
-st.caption("Psychological Assistant for Stock Exchange • Cross-Asset Multi-Engine v15.3")
+st.caption(f"Logged in as: Active Profile Node [{st.session_state.auth_user}] • Cross-Asset Multi-Engine v16.0")
+
+if st.button("🔒 Terminate Session"):
+    st.session_state.authenticated = False
+    st.session_state.auth_user = ""
+    st.rerun()
+
 st.markdown("---")
 
 # --- PATH A: AUTOMATED INDIAN CURRENCY FORMATTER MATRIX ---
@@ -65,8 +155,7 @@ def get_live_asset_price(code_or_ticker, is_stock=False):
         except:
             return None
 
-with st.spinner("🤖 Booting Cross-Asset Databases..."):
-    GLOBAL_AMFI_DB = load_global_amfi_directory()
+GLOBAL_AMFI_DB = load_global_amfi_directory()
 
 # --- RECOVER ROUTED URL STATE PARAMETERS ---
 query_params = st.query_params
@@ -144,11 +233,12 @@ recommended_sip = (income * sip_pct) / 100
 per_asset_sip_budget = recommended_sip / max(total_active_assets_count, 1)
 
 # -------------------------------------------------------------
-# CORE PROCESSING PIPELINE: MUTUAL FUNDS GRID
+# RUN COMPUTATION LOOPS & UI DISPLAY METRICS
 # -------------------------------------------------------------
 if total_active_assets_count > 0:
     st.info(f"💡 **Target Strategy Vector:** Active setup tracking a total investment target pace of **{fmt_inr(recommended_sip)} / month**.")
     
+    # Process Mutual Funds Block
     for fund_name in selected_search_assets:
         if fund_name not in GLOBAL_AMFI_DB:
             continue
@@ -201,7 +291,6 @@ if total_active_assets_count > 0:
             with cm3:
                 st.metric("Absolute Yield", f"{round(current_yield_rate, 2)}%")
 
-            # System Execution Alerts
             if current_yield_rate <= -15.0:
                 h_lumpsum = inv_cap * 0.50
                 st.error(f"🚨 MAXIMUM CRASH ACCUMULATION PROMPT • Asset down {round(current_yield_rate, 2)}%. Deploy 50% cash buffer (~{fmt_inr(h_lumpsum)}) immediately.")
@@ -219,10 +308,9 @@ if total_active_assets_count > 0:
                 st.success(f"🚨 STRATEGIC EXIT CEILING BREACHED • Redeem exactly {round(u_liquidate, 3)} units (~{fmt_inr(trim_cash)}) to lock in {tranche_vol}% of surplus profit.")
             else:
                 st.info(f"🔵 CORE ACCUMULATION STATUS SECURE • Tracking steady at {round(current_yield_rate, 2)}%. No tactical adjustments necessary.")
+        st.markdown("---")
 
-    # -------------------------------------------------------------
-    # PATH B PROCESSING PIPELINE: LIVE NSE/BSE STOCKS & ETFS GRID
-    # -------------------------------------------------------------
+    # Process Live Stocks Block
     for ticker_sym in stock_tickers_list:
         clean_ticker = ticker_sym.strip().upper()
         short_label = clean_ticker.split(".")[0]
@@ -232,7 +320,6 @@ if total_active_assets_count > 0:
             if ra["type"] == "STK" and ra["code"] == clean_ticker:
                 default_cap, default_buy, default_tgt, default_vol = ra["capital"], ra["buy_nav"], ra["target"], ra["vol"]
                 
-        st.markdown("---")
         st.subheader(f"⚡ [STOCK] {clean_ticker}")
         st.caption(f"Real-Time Exchange Stream | Target Recommended SIP: {fmt_inr(per_asset_sip_budget)}/mo")
         
@@ -272,7 +359,6 @@ if total_active_assets_count > 0:
             with cm3:
                 st.metric("Absolute Yield", f"{round(current_yield_rate, 2)}%")
 
-            # Stock Tactical Alerts Loop
             if current_yield_rate <= -15.0:
                 h_lumpsum = inv_cap * 0.50
                 st.error(f"🚨 STOCK EXCHANGE CRASH DISCOUNT ALERT • {clean_ticker} down {round(current_yield_rate, 2)}%. Deploy 50% strategic cash buffer (~{fmt_inr(h_lumpsum)}).")
@@ -290,12 +376,10 @@ if total_active_assets_count > 0:
                 st.success(f"🚨 HIGH-VELOCITY HARVEST TARGET ACCESSED • Sell exactly {round(shares_to_liquidate, 3)} shares (~{fmt_inr(trim_cash)}) to lock in {tranche_vol}% of surplus gains.")
             else:
                 st.info(f"🔵 STOCK MATRIX HOLD STEADY • Ticker performance stands steady at {round(current_yield_rate, 2)}%. Maintain long positions.")
-
-    # -------------------------------------------------------------
-    # DISPLAY VISUAL CHARTS DECK
-    # -------------------------------------------------------------
-    if yield_chart_data or composition_chart_data:
         st.markdown("---")
+
+    # Render Visual Analytics Dashboard Graphs
+    if yield_chart_data or composition_chart_data:
         st.subheader("📊 Live Analytics Performance Dashboard")
         col_ch1, col_ch2 = st.columns(2)
         with col_ch1:
@@ -307,7 +391,7 @@ if total_active_assets_count > 0:
             df_comp = pd.DataFrame(list(composition_chart_data.items()), columns=["Asset Label", "Current Valuation (₹)"]).set_index("Asset Label")
             st.bar_chart(df_comp, height=220)
 
-    # --- COMPUTE COMPREHENSIVE OVERVIEW PROFILE DASHBOARDS ---
+    # Render Consolidated Overview Profile Dashboards
     if global_staked_capital > 0:
         st.markdown("---")
         st.subheader("📊 Consolidated Master Overview")
@@ -324,41 +408,4 @@ if total_active_assets_count > 0:
         with g4:
             st.metric("Aggregate Portfolio Yield", f"{round(master_yield, 2)}%", "🕒 Real-time Cross-Asset Feed Active")
 
-        # Strategic Risk Shield Balance Indicator Bar Chart
-        st.markdown("---")
-        st.subheader("🛡️ Defensive Core Shield Master Balance Bar")
-        total_integrated_wealth = global_current_market_value + fd_reserves
-        mkt_exposure_pct = float(global_current_market_value / total_integrated_wealth) if total_integrated_wealth > 0 else 0.0
-        mkt_exposure_pct = max(0.0, min(1.0, mkt_exposure_pct))
-        
-        st.caption(f"📈 Combined Market Risk Exposure: {round(mkt_exposure_pct * 100, 1)}% | 🛡️ Cash Security Layer: {round((1 - mkt_exposure_pct) * 100, 1)}% (Includes {fmt_inr(total_harvested_surplus_pool)} harvested gains)")
-        st.progress(mkt_exposure_pct)
-        st.info(f"TOTAL INTEGRATED WEALTH POOL VALUE: {fmt_inr(total_integrated_wealth)}")
-
-        # --- BACKGROUND AUTOMATED STATE SYNC ENGINE ---
-        raw_state_string = "|".join(url_state_builder)
-        st.query_params.update(inc=income, sip=sip_pct, shd=fd_reserves, state=raw_state_string)
-
-else:
-    st.markdown("---")
-    st.info("### 📊 Terminal Workspace Active Idle Matrix\n\nOpen up the left control menu (`»`). Choose an asset class and deploy tracking containers to start your dashboard pipelines.")
-
-# --- PERSISTENT PREDICTIVE FORWARD PLANNER ---
-st.markdown("---")
-st.subheader("🎯 Predictive Compound Horizon Playground")
-col_s1, col_s2, col_s3 = st.columns(3)
-with col_s1:
-    target_goal = st.number_input("Target Corpus Goal (₹)", min_value=10000, value=500000, step=50000)
-with col_s2:
-    horizon_years = st.slider("Time Horizon Grid (Years)", min_value=1, max_value=30, value=5, step=1)
-with col_s3:
-    expected_return = st.slider("Expected Compounding Rate (CAGR %)", min_value=8, max_value=25, value=12, step=1)
-
-r = (expected_return / 12) / 100
-n = horizon_years * 12
-required_monthly_sip = target_goal / (((1 + r)**n - 1) / r * (1 + r))
-
-st.success(f"REQUIRED SIP INSTALLMENT RADAR TO HIT TARGET: {fmt_inr(required_monthly_sip)} / month (Compounding over {horizon_years} years at a baseline of {expected_return}%)")
-st.markdown("---")
-st.caption(f"P.A.S.E Pro Terminal Network Active | Universal Engine Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
-            
+        # Render 
