@@ -25,16 +25,17 @@ st.markdown("""
     .profit-negative { color: #f85149; font-weight: bold; font-size: 2rem; margin: 5px 0; }
     .section-header { color: #8b949e; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
     .badge-quality { background-color: #21262d; border: 1px solid #30363d; color: #58a6ff; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+    .badge-settlement { background-color: #1b1f24; border: 1px solid #21262d; color: #8b949e; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; display: inline-block; margin-top: 5px; }
     </style>
     """, unsafe_allow_html=True)
 
 # Main Title Stack Header
 st.title("🛡️ P.A.S.E. Pro Workspace")
-st.caption("Psychological Assistant for Stock Exchange • Advanced Defensive Ladder Edition v11.0")
+st.caption("Psychological Assistant for Stock Exchange • Automated Capital Matrix v12.0")
 st.markdown("---")
 
 # --- GLOBAL LIVE AMFI AUTOMATION INTERNET ENGINES ---
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=86400) # Deep cache master names for 24 hours to enforce blistering fast query execution
 def load_global_amfi_directory():
     try:
         url = "https://api.mfapi.in/mf"
@@ -43,7 +44,7 @@ def load_global_amfi_directory():
     except:
         return {}
 
-@st.cache_data(ttl=1800)
+@st.cache_data(ttl=1800) # Quick cache live NAV ticks for 30 mins to preserve server memory
 def get_live_nav_price(amfi_code):
     if not amfi_code:
         return None
@@ -57,12 +58,12 @@ def get_live_nav_price(amfi_code):
 with st.spinner("🤖 Mapping global AMFI mutual fund registries..."):
     GLOBAL_AMFI_DB = load_global_amfi_directory()
 
-# --- RECOVER ROUTED URL STATE STATE PARAMETERS ---
+# --- RECOVER ROUTED URL STATE PARAMETERS ---
 query_params = st.query_params
 
-init_income = int(query_params.get("inc", [50000])[0]) if "inc" in query_params else 50000
-init_sip_pct = int(query_params.get("sip", [15])[0]) if "sip" in query_params else 15
-init_shield = float(query_params.get("shd", [25000.0])[0]) if "shd" in query_params else 25000.0
+init_income = int(query_params.get("inc", 50000)) if "inc" in query_params else 50000
+init_sip_pct = int(query_params.get("sip", 15)) if "sip" in query_params else 15
+init_shield = float(query_params.get("shd", 25000.0)) if "shd" in query_params else 25000.0
 
 recovered_assets = []
 if "state" in query_params:
@@ -80,7 +81,7 @@ if "state" in query_params:
 # --- SIDEBAR COMMAND MODULE CONTROL STATION ---
 with st.sidebar:
     st.header("⚙️ TERMINAL CORE CONFIGS")
-    st.caption("Calibrate systematic layers. Click sync to lock structures directly to your bookmark URL link.")
+    st.caption("All adjustments dynamically lock straight into your active browser address bar for instant bookmark saving.")
     
     # 1. Capital Distribution Layout
     st.subheader("💰 1. Allocation Planner")
@@ -90,8 +91,9 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # 2. Intelligent AMFI Query Multi-Search Cloud Engine
+    # 2. Blazing Fast AMFI Intelligent Localized Search Hub
     st.subheader("🔍 2. Universal Asset Registry Search")
+    st.caption("Type any fund keyword to immediately isolate targets out of the live master registry.")
     search_query = st.text_input("Enter Fund House / Asset Keyword:", value="")
     
     filtered_options = []
@@ -174,20 +176,17 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
                 st.markdown(f"<span class='metric-title'>Current Absolute Yield</span><div class='metric-value' style='color:{s_color};'>{s_char}{round(current_yield_rate, 2)}%</div>", unsafe_allow_html=True)
 
             # --- SYSTEM RULES-BASED ALGORITHMIC DEFENSIVE LADDER LOOPS ---
-            
-            # Tier 3: Extreme Macro Crash Accumulator
             if current_yield_rate <= -15.0:
                 heavy_crash_lumpsum = inv_cap * 0.50
                 st.markdown(f"""
                 <div class='status-accumulate' style='border-left: 6px solid #ff1111; background-color: #4a1515; color: #ff5555;'>
-                    🚨 🏛️ TARGET SYSTEM LAYER UNDER MAXIMUM CRASH DISOUNT LAYER<br>
+                    🚨 🏛️ TARGET SYSTEM LAYER UNDER MAXIMUM CRASH DISCOUNT LAYER<br>
                     <span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>
-                        Execution Order: <b>{fund_name}</b> has collapsed heavily down to <b>{round(current_yield_rate, 2)}%</b> below cost. This is an extreme market bottom anomaly. Deploy exactly <b>50%</b> of your cash reserves buffer (~₹{round(heavy_crash_lumpsum, 2)}) as a major manual buy execution order immediately to average down your portfolio and leverage massive future compounding momentum.
+                        Execution Order: <b>{fund_name}</b> has collapsed heavily down to <b>{round(current_yield_rate, 2)}%</b> below cost. Deploy exactly <b>50%</b> of your cash reserves buffer (~₹{round(heavy_crash_lumpsum, 2)}) as a major manual buy execution order immediately to average down your portfolio and leverage massive future compounding momentum.
                     </span>
                 </div>
                 """, unsafe_allow_html=True)
                 
-            # Tier 2: Major Correction Accumulator
             elif -15.0 < current_yield_rate <= -10.0:
                 major_correction_lumpsum = inv_cap * 0.30
                 st.markdown(f"""
@@ -199,19 +198,17 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
                 </div>
                 """, unsafe_allow_html=True)
                 
-            # Tier 1: Minor Dip Accumulator
             elif -10.0 < current_yield_rate <= -5.0:
                 minor_dip_lumpsum = inv_cap * 0.15
                 st.markdown(f"""
                 <div class='status-accumulate'>
                     🛒 🩹 DEFENSIVE LADDER ACTIVE • TRANCHE A ENGAGED<br>
                     <span style='font-size:0.85rem; font-weight:normal; color:#c9d1d9;'>
-                        Dip Order: Performance tracks at a minor drawdown entry point of <b>{round(current_yield_rate, 2)}%</b>. Do not burn all your capital yet. Commit a calculated <b>15% entry slice</b> (~₹{round(minor_dip_lumpsum, 2)}) from your reserves to begin averaging down your entry cost basis smoothly.
+                        Dip Order: Performance tracks at a minor drawdown entry point of <b>{round(current_yield_rate, 2)}%</b>. Commit a calculated <b>15% entry slice</b> (~₹{round(minor_dip_lumpsum, 2)}) from your reserves to begin averaging down your entry cost basis smoothly.
                     </span>
                 </div>
                 """, unsafe_allow_html=True)
                 
-            # Module B: PROGRESSIVE VARIABLE TRANCHE HARVESTING RADAR
             elif current_yield_rate >= tgt_yield:
                 target_value_baseline = inv_cap * (1 + (tgt_yield / 100))
                 raw_surplus_cash = current_valuation - target_value_baseline
@@ -256,7 +253,7 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
         with g3:
             st.markdown(f"<div class='card-container'><span class='section-header'>Consolidated Net Returns</span><h2 class='{m_class}'>{m_sign}₹{round(master_profit, 2)}</h2></div>", unsafe_allow_html=True)
         with g4:
-            st.markdown(f"<div class='card-container'><span class='section-header'>Aggregate Portfolio Yield</span><h2 class='{m_class}'>{m_sign}{round(master_yield, 2)}%</h2></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='card-container'><span class='section-header'>Aggregate Portfolio Yield</span><h2 class='{m_class}'>{m_sign}{round(master_yield, 2)}%</h2><div class='badge-settlement'>🕒 NAV settles daily after market close</div></div>", unsafe_allow_html=True)
 
         # Strategic Risk Shield Balance Indicator Bar Chart
         st.markdown("### 🛡️ Defensive Core Shield Master Balance Bar")
@@ -280,19 +277,10 @@ if selected_search_assets and selected_search_assets != ["Search for an asset ab
         </div>
         """, unsafe_allow_html=True)
 
-        # --- SYSTEM LINK RE-WRITING COMPILATION HUB ---
-        st.markdown("---")
-        st.markdown("### 🔗 Lock Strategy State to URL Bookmark")
-        st.caption("Clicking this button compiles all your portfolio elements and embeds them directly inside your browser address link.")
-        
+        # --- BACKGROUND AUTOMATED STATE SYNC ENGINE ---
+        # Automatically updates the URL parameters silently without requiring a click action
         raw_state_string = "|".join(url_state_builder)
-        encoded_state_url = urllib.parse.quote(raw_state_string)
-        sync_link = f"?inc={income}&sip={sip_pct}&shd={fd_reserves}&state={encoded_state_url}"
-        
-        if st.button("🔒 Synchronize State Link"):
-            st.query_params.update(inc=income, sip=sip_pct, shd=fd_reserves, state=raw_state_string)
-            st.success("Configuration successfully locked! Copy the updated URL link from your browser header or bookmark it now.")
-            st.code(sync_link, language="text")
+        st.query_params.update(inc=income, sip=sip_pct, shd=fd_reserves, state=raw_state_string)
 
 else:
     st.info("### 📊 Terminal Workspace Active Idle Matrix\n\nOpen up the left control menu (`»`). Enter keywords into the **Universal Asset Registry Search Engine** and select your fund houses to activate your tracking command dashboard panels.")
@@ -322,4 +310,3 @@ st.markdown(f"""
 
 st.markdown("---")
 st.caption(f"P.A.S.E Pro Terminal Network Active | Grid Node System Sync: {dt.datetime.now().strftime('%Y-%m-%d')} IST")
-    
